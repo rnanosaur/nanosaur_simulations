@@ -23,14 +23,34 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import os
+
 from ament_index_python.packages import get_package_share_directory
+from launch.substitutions import LaunchConfiguration
+from launch.actions import ExecuteProcess
 from launch import LaunchDescription
 
 def generate_launch_description():
-    pkg_perception = get_package_share_directory('nanosaur_gazebo')
+    package_gazebo = get_package_share_directory('nanosaur_gazebo')
+    
+    use_sim_time = LaunchConfiguration('use_sim_time', default='true')
+    
+    world_file_name = "empty_world.world"
+
+    # full  path to urdf and world file
+    world = os.path.join(package_gazebo, "worlds", world_file_name)
+
+    # start gazebo, notice we are using libgazebo_ros_factory.so instead of libgazebo_ros_init.so
+    # That is because only libgazebo_ros_factory.so contains the service call to /spawn_entity
+    gazebo_process = ExecuteProcess(
+        cmd=["gazebo", "--verbose", world, "-s", "libgazebo_ros_factory.so"],
+        output="screen",
+    )
+    
+    
 
     ld = LaunchDescription()
-    # ld.add_action(declare_cover_type_cmd)
+    ld.add_action(gazebo_process)
     
     return ld
 # EOF
