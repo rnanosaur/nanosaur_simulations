@@ -27,29 +27,29 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-    <name>nanosaur_gazebo</name>
-    <version>0.1.0</version>
-    <description>nanosaur gazebo package</description>
+   <name>nanosaur_gazebo</name>
+   <version>0.1.0</version>
+   <description>This package run nanosaur in gazebo world</description>
 
-    <author email="raffaello@rnext.it">Raffaello Bonghi</author>
-    <maintainer email="raffaello@rnext.it">Raffaello Bonghi</maintainer>
-    <license>MIT</license>
+   <author email="raffaello@rnext.it">Raffaello Bonghi</author>
+   <maintainer email="raffaello@rnext.it">Raffaello Bonghi</maintainer>
+   <license>MIT</license>
 
-    <url type="website">https://nanosaur.ai/</url>
-    <url type="repository">https://github.com/rnanosaur/nanosaur_gazebo</url>
-    <url type="bugtracker">https://github.com/rnanosaur/nanosaur_gazebo/issues</url>
+   <url type="website">https://nanosaur.ai/</url>
+   <url type="repository">https://github.com/rnanosaur/nanosaur_gazebo</url>
+   <url type="bugtracker">https://github.com/rnanosaur/nanosaur_gazebo/issues</url>
 
-    <buildtool_depend>ament_cmake</buildtool_depend>
+   <buildtool_depend>ament_cmake</buildtool_depend>
 
-    <test_depend>ament_lint_auto</test_depend>
-    <test_depend>ament_lint_common</test_depend>
+   <test_depend>ament_lint_auto</test_depend>
+   <test_depend>ament_lint_common</test_depend>
 
-    <exec_depend>gazebo_ros</exec_depend>
-    <exec_depend>gazebo_plugins</exec_depend>
+   <exec_depend>gazebo_ros</exec_depend>
+   <exec_depend>gazebo_plugins</exec_depend>
 
-    <exec_depend>xacro</exec_depend>
+   <exec_depend>xacro</exec_depend>
 
-    <export>
-        <build_type>ament_cmake</build_type>
-    </export>
+   <export>
+      <build_type>ament_cmake</build_type>
+   </export>
 </package>
