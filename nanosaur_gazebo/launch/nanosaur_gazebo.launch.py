@@ -26,31 +26,31 @@
 import os
 import xacro
 
-from ament_index_python.packages import get_package_prefix
 from ament_index_python.packages import get_package_share_directory
 from launch.substitutions import LaunchConfiguration
+from launch.actions import IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 from launch.actions import ExecuteProcess
 from launch import LaunchDescription
 
 def generate_launch_description():
-    package_description = get_package_share_directory('nanosaur_description')
     package_gazebo = get_package_share_directory('nanosaur_gazebo')
+    gazebo_ros_path = get_package_share_directory('gazebo_ros')
     
     use_sim_time = LaunchConfiguration('use_sim_time', default='true')
 
-    xacro_file = "nanosaur.urdf.xml"
+    xacro_file = "nanosaur.urdf.xacro"
     world_file_name = "empty_world.world"
 
     # full  path to urdf and world file
     world = os.path.join(package_gazebo, "worlds", world_file_name)
-    xacro_path = os.path.join(package_description, "urdf", xacro_file)
+    xacro_path = os.path.join(package_gazebo, "urdf", xacro_file)
 
     # process urdf contents because to spawn an entity in
     # gazebo we need to provide entire urdf as string on  command line
     robot_desc = xacro.process_file(xacro_path)
     xml = robot_desc.toxml()
-    print(xml)
 
     # Launch Robot State Publisher
     robot_state_publisher_node = Node(
@@ -79,10 +79,14 @@ def generate_launch_description():
         output="screen",
     )
 
+    gazebo = IncludeLaunchDescription(
+                PythonLaunchDescriptionSource([os.path.join(gazebo_ros_path, 'launch'), '/gazebo.launch.py']),
+             )
+
     ld = LaunchDescription()
-    #ld.add_action(gazebo_process)
-    #ld.add_action(robot_state_publisher_node)
-    #ld.add_action(spawn_robot)
+    ld.add_action(gazebo)
+    ld.add_action(robot_state_publisher_node)
+    ld.add_action(spawn_robot)
     
     return ld
 # EOF

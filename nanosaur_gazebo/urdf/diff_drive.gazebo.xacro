@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<robot name="nanosaur_track" xmlns:xacro="http://ros.org/wiki/xacro">
+
+    <xacro:macro name="track_drive" params="parent robot_name">
+
+        <gazebo>
+            <plugin filename="libgazebo_ros_diff_drive.so" name="skid_steer_drive_controller">
+            <ros>
+                <namespace>/${robot_name}</namespace>
+                <argument>/cmd_vel:=cmd_vel</argument>
+                <argument>/odom:=odom</argument>
+            </ros>
+            <update_rate>100.0</update_rate>
+            <num_wheel_pairs>2</num_wheel_pairs>
+            <odometry_frame>odom</odometry_frame>
+            <left_joint>sprocket_left_joint</left_joint>
+            <left_joint>wheel_left_joint</left_joint>
+            <wheel_separation>0.4</wheel_separation>
+            <wheel_diameter>0.2</wheel_diameter>
+            <right_joint>sprocket_right_joint</right_joint>
+            <right_joint>wheel_right_joint</right_joint>
+            <wheel_separation>0.4</wheel_separation>
+            <wheel_diameter>0.2</wheel_diameter>
+            <robot_base_frame>${parent}</robot_base_frame>
+            <max_wheel_torque>15</max_wheel_torque>
+            <publish_odom>true</publish_odom>
+            <publish_odom_tf>true</publish_odom_tf>
+            <publish_wheel_tf>true</publish_wheel_tf>
+            <odometry_source>world</odometry_source>
+            </plugin>
+        </gazebo>
+
+    </xacro:macro>
+
+</robot>

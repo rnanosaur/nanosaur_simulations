@@ -1,4 +1,22 @@
 <?xml version="1.0"?>
-<robot name="nanosaur" xmlns:xacro="http://ros.org/wiki/xacro">
+<robot name="nanosaur_gazebo" xmlns:xacro="http://ros.org/wiki/xacro">
+
+    <!-- nanosaur parts -->
+    <xacro:include filename="$(find nanosaur_description)/urdf/robot.urdf.xacro" />
+    <!-- differential drive -->
+    <xacro:include filename="$(find nanosaur_gazebo)/urdf/diff_drive.gazebo.xacro" />
+
+    <!-- camera definitions -->
+    <xacro:arg name="cover_type" default="realsense" /> <!--options: pi, fisheye, realsense, zedmini -->
+
+    <!-- nanosaur robot
+         "simulation" parameter enable simulation mode.
+         Add extra wheel and center sprocket for differential drive simulation -->
+    <xacro:nanosaur cover_type="$(arg cover_type)"
+                    use_nominal_extrinsics="true"
+                    simulation="true" />
+
+    <!-- nanosaur differential drive controller -->
+    <xacro:track_drive parent="base_link" robot_name="nanosaur"/>
 
 </robot>
