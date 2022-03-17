@@ -5,9 +5,13 @@
     <xacro:include filename="$(find nanosaur_description)/urdf/robot.urdf.xacro" />
     <!-- differential drive -->
     <xacro:include filename="$(find nanosaur_gazebo)/urdf/diff_drive.gazebo.xacro" />
+    <!-- Sensors -->
+    <xacro:include filename="$(find nanosaur_gazebo)/urdf/sensors/camera.gazebo.xacro" />
+    <xacro:include filename="$(find nanosaur_gazebo)/urdf/sensors/wide.gazebo.xacro" />
 
     <!-- camera definitions -->
     <xacro:arg name="cover_type" default="realsense" /> <!--options: pi, fisheye, realsense, zedmini -->
+    <xacro:property name="cover_type_name" value="$(arg cover_type)" />
 
     <!-- nanosaur robot
          "diff_drive_emulation" parameter enable simulation mode.
@@ -22,5 +26,21 @@
                        update_rate="100.0"
                        wheel_radius="0.0150"
                        wheel_separation="0.4" />
+
+    <!-- Nanosaur sensors -->
+    <xacro:if value="${cover_type_name == 'pi'}">
+        <xacro:normal_camera parent_name="camera_board" sensor_name="rgb_camera_nanosaur">
+            <origin xyz="0 0 0" rpy="0 ${M_PI/2} 0" />
+        </xacro:normal_camera>
+    </xacro:if>
+    <xacro:if value="${cover_type_name == 'fisheye'}">
+        <xacro:wide_angle_camera parent_name="camera_board" sensor_name="rgb_camera_nanosaur">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+        </xacro:wide_angle_camera>
+    </xacro:if>
+    <xacro:if value="${cover_type_name == 'realsense'}">
+    </xacro:if>
+    <xacro:if value="${cover_type_name == 'zedmini'}">
+    </xacro:if>
 
 </robot>

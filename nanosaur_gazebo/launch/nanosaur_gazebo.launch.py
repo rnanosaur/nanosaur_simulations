@@ -28,7 +28,7 @@ import xacro
 
 from ament_index_python.packages import get_package_share_directory
 from launch.actions import DeclareLaunchArgument
-from launch.substitutions import LaunchConfiguration
+from launch.substitutions import Command, LaunchConfiguration
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
@@ -42,6 +42,7 @@ def generate_launch_description():
 
     world_file_name = LaunchConfiguration('world_file_name')
     use_sim_time = LaunchConfiguration('use_sim_time', default='true')
+    cover_type = LaunchConfiguration('cover_type')
 
     gazebo_gui_cmd = DeclareLaunchArgument('gui', default_value='true',
                                            description='Set to "false" to run headless.')
@@ -52,31 +53,37 @@ def generate_launch_description():
     world_file_name_cmd = DeclareLaunchArgument('world_file_name', default_value='empty_world.world',
                                                 description='Load gazebo world.')
 
+    declare_cover_type_cmd = DeclareLaunchArgument(
+        name='cover_type',
+        default_value='fisheye',
+        description='Cover type to use. Options: pi, fisheye, realsense, zedmini.')
+
     # full  path to urdf and world file
     # world = os.path.join(package_gazebo, "worlds", world_file_name)
     xacro_path = os.path.join(package_gazebo, "urdf", "nanosaur.urdf.xacro")
-
-    # process urdf contents because to spawn an entity in
-    # gazebo we need to provide entire urdf as string on  command line
-    robot_desc = xacro.process_file(xacro_path)
-    xml = robot_desc.toxml()
 
     # Launch Robot State Publisher
     robot_state_publisher_node = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
-        parameters=[{'use_sim_time': use_sim_time, 'robot_description': xml}]
+        parameters=[{'use_sim_time': use_sim_time,
+                     'robot_description': Command(
+                         [
+                             'xacro ', xacro_path, ' ',
+                             'cover_type:=', cover_type, ' ',
+                         ])
+                     }]
     )
 
     # Spawn robot
     spawn_robot = Node(
         package='gazebo_ros',
-        node_executable='spawn_entity.py',
-        node_name='spawn_entity',
+        executable='spawn_entity.py',
+        name='spawn_entity',
         output='screen',
         arguments=['-entity', 'nanosaur',
                    '-topic', '/robot_description',
-                   '-x', '0', '-y', '0', '-z', '0'
+                   '-x', '0', '-y', '0', '-z', '0',
                    ]
     )
 
@@ -103,6 +110,7 @@ def generate_launch_description():
     ld.add_action(gazebo_gui_cmd)
     ld.add_action(gazebo_server_cmd)
     ld.add_action(world_file_name_cmd)
+    ld.add_action(declare_cover_type_cmd)
     ld.add_action(gazebo_server)
     ld.add_action(gazebo_gui)
     ld.add_action(robot_state_publisher_node)
