@@ -10,13 +10,17 @@
     <xacro:arg name="cover_type" default="realsense" /> <!--options: pi, fisheye, realsense, zedmini -->
 
     <!-- nanosaur robot
-         "simulation" parameter enable simulation mode.
+         "diff_drive_emulation" parameter enable simulation mode.
          Add extra wheel and center sprocket for differential drive simulation -->
     <xacro:nanosaur cover_type="$(arg cover_type)"
                     use_nominal_extrinsics="true"
-                    simulation="true" />
+                    diff_drive_emulation="true" />
 
     <!-- nanosaur differential drive controller -->
-    <xacro:track_drive parent="base_link" robot_name="nanosaur"/>
+    <xacro:track_drive parent="base_link"
+                       robot_name="nanosaur"
+                       update_rate="100.0"
+                       wheel_radius="0.0150"
+                       wheel_separation="0.4" />
 
 </robot>
