@@ -49,7 +49,7 @@ def generate_launch_description():
     gazebo_server_cmd = DeclareLaunchArgument('server', default_value='true',
                                               description='Set to "false" not to run gzserver.')
 
-    world_file_name_cmd = DeclareLaunchArgument('world_file_name', default_value='aaaaaempty_world.world',
+    world_file_name_cmd = DeclareLaunchArgument('world_file_name', default_value='empty_world.world',
                                                 description='Load gazebo world.')
 
     # full  path to urdf and world file
