@@ -16,9 +16,11 @@
     <!-- nanosaur robot
          "diff_drive_emulation" parameter enable simulation mode.
          Add extra wheel and center sprocket for differential drive simulation -->
+    <!--https://github.com/ros-simulation/gazebo_ros_pkgs/pull/1284 -->
     <xacro:nanosaur cover_type="$(arg cover_type)"
                     use_nominal_extrinsics="true"
-                    diff_drive_emulation="true" />
+                    diff_drive_emulation="true"
+                    path_meshes="file://$(find nanosaur_description)/meshes" />
 
     <!-- nanosaur differential drive controller -->
     <xacro:track_drive parent="base_link"
