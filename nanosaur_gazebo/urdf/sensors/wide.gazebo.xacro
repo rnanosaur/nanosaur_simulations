@@ -7,23 +7,23 @@
     <xacro:property name="camera_box_y" value="0.01"/>
     <xacro:property name="camera_box_z" value="0.01"/>
 
-  <xacro:macro name="wide_angle_camera" params="parent_name sensor_name *camera_pose">
+  <xacro:macro name="wide_angle_camera" params="parent_name sensor_name robot_name *camera_pose">
 
     <link name='${sensor_name}_camera_link'>
-		<visual>
-			<origin xyz="0 0 0"
-					rpy="0 0 0"/>
-			<geometry>
-				<box size="${camera_box_x} ${camera_box_y} ${camera_box_z}"/>
-			</geometry>
-		</visual>
-	</link>
+      <visual>
+      <origin xyz="0 0 0"
+          rpy="0 0 0"/>
+      <geometry>
+        <box size="${camera_box_x} ${camera_box_y} ${camera_box_z}"/>
+      </geometry>
+      </visual>
+    </link>
 
     <joint name="${sensor_name}_camera_link_joint" type="fixed">
-		<xacro:insert_block name="camera_pose"/>
-		<parent link="${parent_name}"/>
-		<child link="${sensor_name}_camera_link"/>
-	</joint>
+      <xacro:insert_block name="camera_pose"/>
+      <parent link="${parent_name}"/>
+      <child link="${sensor_name}_camera_link"/>
+    </joint>
 
 
     <link name="${sensor_name}_camera_link_frame">
@@ -37,7 +37,7 @@
     </joint>
 
     <gazebo reference="${sensor_name}_camera_link_frame">
-        <sensor name="camera" type="wideanglecamera">
+        <sensor type="wideanglecamera" name="camera">
           <camera>
             <horizontal_fov>6.283</horizontal_fov>
             <image>
