@@ -34,15 +34,22 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 from launch import LaunchDescription
 from launch.conditions import IfCondition
+from launch.actions import GroupAction
+from launch_ros.actions import PushRosNamespace
 
 
 def generate_launch_description():
     package_gazebo = get_package_share_directory('nanosaur_gazebo')
     gazebo_ros_path = get_package_share_directory('gazebo_ros')
+    pkg_control = get_package_share_directory('nanosaur_control')
+
+    cover_type_conf = os.getenv("COVER_TYPE", 'fisheye')
+    print(f"Load cover_type from ENV: {cover_type_conf}")
 
     world_file_name = LaunchConfiguration('world_file_name')
     use_sim_time = LaunchConfiguration('use_sim_time', default='true')
     cover_type = LaunchConfiguration('cover_type')
+    namespace = LaunchConfiguration('namespace', default="nanosaur")
 
     gazebo_gui_cmd = DeclareLaunchArgument('gui', default_value='true',
                                            description='Set to "false" to run headless.')
@@ -55,8 +62,8 @@ def generate_launch_description():
 
     declare_cover_type_cmd = DeclareLaunchArgument(
         name='cover_type',
-        default_value='fisheye',
-        description='Cover type to use. Options: pi, fisheye, realsense, zedmini.')
+        default_value=cover_type_conf,
+        description='Cover type to use. Options: pi, fisheye, realsense, zed.')
 
     # full  path to urdf and world file
     # world = os.path.join(package_gazebo, "worlds", world_file_name)
@@ -66,6 +73,7 @@ def generate_launch_description():
     robot_state_publisher_node = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
+        namespace=namespace,
         parameters=[{'use_sim_time': use_sim_time,
                      'robot_description': Command(
                          [
@@ -81,8 +89,9 @@ def generate_launch_description():
         executable='spawn_entity.py',
         name='spawn_entity',
         output='screen',
+        namespace=namespace,
         arguments=['-entity', 'nanosaur',
-                   '-topic', '/robot_description',
+                   '-topic', 'robot_description',
                    '-x', '0', '-y', '0', '-z', '0',
                    ]
     )
@@ -106,6 +115,19 @@ def generate_launch_description():
         condition=IfCondition(LaunchConfiguration('gui'))
     )
 
+    ###################### Twist controls ######################
+    
+    # include another launch file in nanosaur namespace
+    twist_control_launch = GroupAction(
+        actions=[
+            # push-ros-namespace to set namespace of included nodes
+            PushRosNamespace(namespace),
+            # nanosaur twist launch
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource([pkg_control, '/launch/twist_control.launch.py']))
+        ]
+    )
+
     ld = LaunchDescription()
     ld.add_action(gazebo_gui_cmd)
     ld.add_action(gazebo_server_cmd)
@@ -115,6 +137,7 @@ def generate_launch_description():
     ld.add_action(gazebo_gui)
     ld.add_action(robot_state_publisher_node)
     ld.add_action(spawn_robot)
+    ld.add_action(twist_control_launch)
 
     return ld
 # EOF
