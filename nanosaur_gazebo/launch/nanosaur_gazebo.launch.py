@@ -43,7 +43,7 @@ def generate_launch_description():
     gazebo_ros_path = get_package_share_directory('gazebo_ros')
     pkg_control = get_package_share_directory('nanosaur_control')
 
-    cover_type_conf = os.getenv("COVER_TYPE", 'fisheye')
+    cover_type_conf = os.getenv("NANOSAUR_COVER_TYPE", 'fisheye')
     print(f"Load cover_type from ENV: {cover_type_conf}")
 
     world_file_name = LaunchConfiguration('world_file_name')

@@ -7,16 +7,16 @@
     <xacro:property name="camera_box_y" value="0.01"/>
     <xacro:property name="camera_box_z" value="0.01"/>
 
-  <xacro:macro name="normal_camera" params="parent_name sensor_name *camera_pose">   
+  <xacro:macro name="normal_camera" params="parent_name sensor_name robot_name *camera_pose">   
 
     <link name='${sensor_name}_camera_link'>
-		<!-- <visual>
+		<visual>
 			<origin xyz="0 0 0"
 					rpy="0 0 0"/>
 			<geometry>
 				<box size="${camera_box_x} ${camera_box_y} ${camera_box_z}"/>
 			</geometry>
-		</visual> -->
+		</visual>
 	</link>
 
     <joint name="${sensor_name}_camera_link_joint" type="fixed">
@@ -41,7 +41,7 @@
         <update_rate>10.0</update_rate>
         <camera name="${sensor_name}_SP">
 
-            <pose>0 0 0 0 0 0</pose>
+            <pose>0.05 0 0 0 0 0</pose>
 
             <horizontal_fov>1.3962634</horizontal_fov>
             <image>
@@ -55,6 +55,9 @@
             </clip>
         </camera>
         <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+            <ros>
+                <namespace>/${robot_name}</namespace>
+            </ros>
             <alwaysOn>true</alwaysOn>
             <updateRate>0.0</updateRate>
             <cameraName>${sensor_name}</cameraName>

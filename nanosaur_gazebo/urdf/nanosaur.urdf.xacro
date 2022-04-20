@@ -31,12 +31,12 @@
 
     <!-- Nanosaur sensors -->
     <xacro:if value="${cover_type_name == 'pi'}">
-        <xacro:normal_camera parent_name="camera_board" sensor_name="rgb_camera_nanosaur">
+        <xacro:normal_camera parent_name="camera_board" sensor_name="camera" robot_name="nanosaur">
             <origin xyz="0 0 0" rpy="0 ${M_PI/2} 0" />
         </xacro:normal_camera>
     </xacro:if>
     <xacro:if value="${cover_type_name == 'fisheye'}">
-        <xacro:wide_angle_camera parent_name="camera_board" sensor_name="rgb_camera_nanosaur">
+        <xacro:wide_angle_camera parent_name="camera_board" sensor_name="camera" robot_name="nanosaur">
             <origin xyz="0 0 0" rpy="0 0 0" />
         </xacro:wide_angle_camera>
     </xacro:if>
