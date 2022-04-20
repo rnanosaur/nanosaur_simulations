@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<robot name="nanosaur_sensors" xmlns:xacro="http://ros.org/wiki/xacro">
+<robot name="nanosaur_sensor_camera" xmlns:xacro="http://ros.org/wiki/xacro">
 
     <!-- Sensors -->
     <xacro:property name="sensor_mass" value="0.01"/>
