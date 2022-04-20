@@ -43,7 +43,7 @@
         </xacro:wide_angle_camera>
     </xacro:if>
     <xacro:if value="${cover_type_name == 'realsense'}">
-        <xacro:realsense_camera parent_name="camera_board" sensor_name="camera" robot_name="$(arg robot_name)" />
+        <xacro:realsense_camera parent_name="camera_board" sensor_name="camera" robot_name="$(arg robot_name)" publish_pointcloud="true" />
     </xacro:if>
     <xacro:if value="${cover_type_name == 'zedmini'}">
     </xacro:if>

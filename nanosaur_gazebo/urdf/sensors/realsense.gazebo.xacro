@@ -1,11 +1,11 @@
 <?xml version="1.0" ?>
 <robot name="nanosaur_sensor_realsense" xmlns:xacro="http://ros.org/wiki/xacro">
 
-    <xacro:macro name="realsense_camera" params="parent_name sensor_name robot_name">
+    <xacro:macro name="realsense_camera" params="parent_name sensor_name robot_name publish_pointcloud">
 
     <gazebo reference="camera_link">
         <sensor name="cameradepth" type="depth">
-            <camera name="camera">
+            <camera name="${sensor_name}">
             <horizontal_fov>1.57</horizontal_fov>
             <image>
                 <width>1280</width>
@@ -27,7 +27,7 @@
         </sensor>
 
         <sensor name="cameracolor" type="camera">
-            <camera name="camera">
+            <camera name="${sensor_name}">
                 <horizontal_fov>1.57</horizontal_fov>
                 <image>
                     <width>1280</width>
@@ -50,7 +50,7 @@
         </sensor>
 
         <sensor name="cameraired1" type="camera">
-            <camera name="camera">
+            <camera name="${sensor_name}">
                 <horizontal_fov>1.57</horizontal_fov>
                 <image>
                     <width>1280</width>
@@ -73,7 +73,7 @@
         </sensor>
 
         <sensor name="cameraired2" type="camera">
-            <camera name="camera">
+            <camera name="${sensor_name}">
                 <horizontal_fov>1.57</horizontal_fov>
                 <image>
                     <width>1280</width>
@@ -98,7 +98,7 @@
     
     <gazebo>
         <plugin name="camera" filename="librealsense_gazebo_plugin.so">
-            <prefix>camera</prefix>
+            <prefix>${sensor_name}</prefix>
             <depthUpdateRate>30.0</depthUpdateRate>
             <colorUpdateRate>30.0</colorUpdateRate>
             <infraredUpdateRate>1.0</infraredUpdateRate>
@@ -116,7 +116,7 @@
             <infrared2OpticalframeName>camera_infra2_optical_frame</infrared2OpticalframeName>
             <rangeMinDepth>0.3</rangeMinDepth>
             <rangeMaxDepth>3.0</rangeMaxDepth>
-            <pointCloud>true</pointCloud>
+            <pointCloud>${publish_pointcloud}</pointCloud>
             <pointCloudTopicName>depth/color/points</pointCloudTopicName>
             <pointCloudCutoff>0.3</pointCloudCutoff>
         </plugin>
