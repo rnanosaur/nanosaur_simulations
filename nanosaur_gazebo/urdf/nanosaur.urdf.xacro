@@ -9,11 +9,15 @@
     <xacro:include filename="$(find nanosaur_gazebo)/urdf/sensors/camera.gazebo.xacro" />
     <xacro:include filename="$(find nanosaur_gazebo)/urdf/sensors/wide.gazebo.xacro" />
     <xacro:include filename="$(find nanosaur_gazebo)/urdf/sensors/realsense.gazebo.xacro" />
+    <xacro:include filename="$(find nanosaur_gazebo)/urdf/sensors/zedmini.gazebo.xacro" />
 
     <xacro:arg name="robot_name" default="nanosaur" />
     <!-- camera definitions -->
     <xacro:arg name="cover_type" default="realsense" /> <!--options: pi, fisheye, realsense, zedmini -->
     <xacro:property name="cover_type_name" value="$(arg cover_type)" />
+    
+    <xacro:arg name="depth_camera"  default="left"/>
+    <xacro:arg name="resolution"    default="HD720"/>
 
     <!-- nanosaur robot
          "diff_drive_emulation" parameter enable simulation mode.
@@ -46,6 +50,8 @@
         <xacro:realsense_camera parent_name="camera_board" sensor_name="camera" robot_name="$(arg robot_name)" publish_pointcloud="true" />
     </xacro:if>
     <xacro:if value="${cover_type_name == 'zedmini'}">
+        <xacro:zedmini_camera sensor_name="camera" robot_name="$(arg robot_name)"
+            camera_model="zedm" depth_camera="$(arg depth_camera)" resolution="$(arg resolution)" />
     </xacro:if>
 
 </robot>
