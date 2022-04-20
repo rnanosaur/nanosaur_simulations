@@ -51,14 +51,25 @@ def generate_launch_description():
     cover_type = LaunchConfiguration('cover_type')
     namespace = LaunchConfiguration('namespace', default="nanosaur")
 
-    gazebo_gui_cmd = DeclareLaunchArgument('gui', default_value='true',
-                                           description='Set to "false" to run headless.')
+    nanosaur_cmd = DeclareLaunchArgument(
+        name='namespace',
+        default_value='nanosaur',
+        description='nanosaur namespace name. If you are working with multiple robot you can change this namespace.')
 
-    gazebo_server_cmd = DeclareLaunchArgument('server', default_value='true',
-                                              description='Set to "false" not to run gzserver.')
+    gazebo_gui_cmd = DeclareLaunchArgument(
+        name='gui',
+        default_value='true',
+        description='Set to "false" to run headless.')
 
-    world_file_name_cmd = DeclareLaunchArgument('world_file_name', default_value='empty_world.world',
-                                                description='Load gazebo world.')
+    gazebo_server_cmd = DeclareLaunchArgument(
+        name='server',
+        default_value='true',
+        description='Set to "false" not to run gzserver.')
+
+    world_file_name_cmd = DeclareLaunchArgument(
+        name='world_file_name',
+        default_value='empty_world.world',
+        description='Load gazebo world.')
 
     declare_cover_type_cmd = DeclareLaunchArgument(
         name='cover_type',
@@ -78,6 +89,7 @@ def generate_launch_description():
                      'robot_description': Command(
                          [
                              'xacro ', xacro_path, ' ',
+                             'robot_name:=', namespace, ' ',
                              'cover_type:=', cover_type, ' ',
                          ])
                      }]
@@ -116,7 +128,7 @@ def generate_launch_description():
     )
 
     ###################### Twist controls ######################
-    
+
     # include another launch file in nanosaur namespace
     twist_control_launch = GroupAction(
         actions=[
@@ -129,6 +141,7 @@ def generate_launch_description():
     )
 
     ld = LaunchDescription()
+    ld.add_action(nanosaur_cmd)
     ld.add_action(gazebo_gui_cmd)
     ld.add_action(gazebo_server_cmd)
     ld.add_action(world_file_name_cmd)
