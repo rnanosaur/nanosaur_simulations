@@ -9,7 +9,7 @@
     <xacro:include filename="$(find nanosaur_gazebo)/urdf/sensors/camera.gazebo.xacro" />
     <xacro:include filename="$(find nanosaur_gazebo)/urdf/sensors/wide.gazebo.xacro" />
     <xacro:include filename="$(find nanosaur_gazebo)/urdf/sensors/realsense.gazebo.xacro" />
-    <xacro:include filename="$(find nanosaur_gazebo)/urdf/sensors/zedmini.gazebo.xacro" />
+    <xacro:include filename="$(find nanosaur_gazebo)/urdf/sensors/zed.gazebo.xacro" />
 
     <xacro:arg name="robot_name" default="nanosaur" />
     <!-- camera definitions -->
@@ -50,7 +50,7 @@
         <xacro:realsense_camera parent_name="camera_board" sensor_name="camera" robot_name="$(arg robot_name)" publish_pointcloud="true" />
     </xacro:if>
     <xacro:if value="${cover_type_name == 'zedmini'}">
-        <xacro:zedmini_camera sensor_name="camera" robot_name="$(arg robot_name)"
+        <xacro:zed_gazebo_camera sensor_name="camera" robot_name="$(arg robot_name)"
             camera_model="zedm" depth_camera="$(arg depth_camera)" resolution="$(arg resolution)" />
     </xacro:if>
 
