@@ -140,6 +140,13 @@ def generate_launch_description():
         ]
     )
 
+    rviz2 = Node(
+        package='rviz2',
+        executable='rviz2',
+        name='rviz2',
+        output='screen',
+    )
+
     ld = LaunchDescription()
     ld.add_action(nanosaur_cmd)
     ld.add_action(gazebo_gui_cmd)
@@ -151,6 +158,8 @@ def generate_launch_description():
     ld.add_action(robot_state_publisher_node)
     ld.add_action(spawn_robot)
     ld.add_action(twist_control_launch)
+    
+    ld.add_action(rviz2)
 
     return ld
 # EOF

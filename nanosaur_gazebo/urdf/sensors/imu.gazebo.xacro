@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<robot name="nanosaur_sensor_imu" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:macro name="imu_gazebo" params="name frame">
+
+    <!-- IMU -->
+    <gazebo reference="${frame}">
+        <gravity>true</gravity>
+        <sensor name="${name}_imu_sensor" type="imu">
+            <always_on>true</always_on>
+            <update_rate>100</update_rate>
+            <visualize>true</visualize>
+            <noise>
+              <type>gaussian</type>
+              <!-- Noise is sampled independently per pixel on each frame.
+                   That pixel's noise value is added to each of its color
+                   channels, which at that point lie in the range [0,1]. -->
+              <mean>0.0</mean>
+              <stddev>0.007</stddev>
+            </noise>
+            <topic>/${name}/imu/data</topic>
+            <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
+                <topicName>/${name}/imu/data</topicName>
+                <bodyName>${frame}</bodyName>
+                <updateRateHZ>100.0</updateRateHZ>
+                <gaussianNoise>0.0025</gaussianNoise>
+                <xyzOffset>0 0 0</xyzOffset>
+                <rpyOffset>0 0 0</rpyOffset>
+                <frameName>${frame}</frameName>
+            </plugin>
+            <pose>0 0 0 0 0 0</pose>
+        </sensor>
+    </gazebo>
+
+  </xacro:macro>
+
+</robot>
