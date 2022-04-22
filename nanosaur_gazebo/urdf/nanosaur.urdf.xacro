@@ -14,9 +14,11 @@
 
     <xacro:arg name="robot_name" default="nanosaur" />
     <!-- camera definitions -->
-    <xacro:arg name="cover_type" default="realsense" /> <!--options: pi, fisheye, realsense, zedmini -->
+    <xacro:arg name="cover_type" default="fisheye" /> <!--options: pi, fisheye, realsense, zedmini -->
     <xacro:property name="cover_type_name" value="$(arg cover_type)" />
     
+    <xacro:arg name="publish_pointcloud"  default="false"/>
+
     <xacro:arg name="depth_camera"  default="left"/>
     <xacro:arg name="resolution"    default="VGA"/>
 
@@ -48,7 +50,7 @@
         </xacro:wide_angle_camera>
     </xacro:if>
     <xacro:if value="${cover_type_name == 'realsense'}">
-        <xacro:realsense_camera parent_name="camera_board" sensor_name="camera" robot_name="$(arg robot_name)" publish_pointcloud="true" />
+        <xacro:realsense_camera parent_name="camera_board" sensor_name="camera" robot_name="$(arg robot_name)" publish_pointcloud="$(arg publish_pointcloud)" />
     </xacro:if>
     <xacro:if value="${cover_type_name == 'zed'}">
         <xacro:zed_gazebo_camera parent_name="camera_board" sensor_name="zed" robot_name="$(arg robot_name)"

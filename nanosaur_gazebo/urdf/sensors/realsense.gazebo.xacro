@@ -102,14 +102,14 @@
             <depthUpdateRate>30.0</depthUpdateRate>
             <colorUpdateRate>30.0</colorUpdateRate>
             <infraredUpdateRate>1.0</infraredUpdateRate>
-            <depthTopicName>aligned_depth_to_color/image_raw</depthTopicName>
-            <depthCameraInfoTopicName>depth/camera_info</depthCameraInfoTopicName>
-            <colorTopicName>color/image_raw</colorTopicName>
-            <colorCameraInfoTopicName>color/camera_info</colorCameraInfoTopicName>
-            <infrared1TopicName>infra1/image_raw</infrared1TopicName>
-            <infrared1CameraInfoTopicName>infra1/camera_info</infrared1CameraInfoTopicName>
-            <infrared2TopicName>infra2/image_raw</infrared2TopicName>
-            <infrared2CameraInfoTopicName>infra2/camera_info</infrared2CameraInfoTopicName>
+            <depthTopicName>${robot_name}/${sensor_name}/aligned_depth_to_color/image_raw</depthTopicName>
+            <depthCameraInfoTopicName>${robot_name}/${sensor_name}/depth/camera_info</depthCameraInfoTopicName>
+            <colorTopicName>${robot_name}/${sensor_name}/color/image_raw</colorTopicName>
+            <colorCameraInfoTopicName>${robot_name}/${sensor_name}/color/camera_info</colorCameraInfoTopicName>
+            <infrared1TopicName>${robot_name}/${sensor_name}/infra1/image_raw</infrared1TopicName>
+            <infrared1CameraInfoTopicName>${robot_name}/${sensor_name}/infra1/camera_info</infrared1CameraInfoTopicName>
+            <infrared2TopicName>${robot_name}/${sensor_name}/infra2/image_raw</infrared2TopicName>
+            <infrared2CameraInfoTopicName>${robot_name}/${sensor_name}/infra2/camera_info</infrared2CameraInfoTopicName>
             <colorOpticalframeName>camera_color_optical_frame</colorOpticalframeName>
             <depthOpticalframeName>camera_depth_optical_frame</depthOpticalframeName>
             <infrared1OpticalframeName>camera_infra1_optical_frame</infrared1OpticalframeName>
@@ -117,7 +117,7 @@
             <rangeMinDepth>0.3</rangeMinDepth>
             <rangeMaxDepth>3.0</rangeMaxDepth>
             <pointCloud>${publish_pointcloud}</pointCloud>
-            <pointCloudTopicName>depth/color/points</pointCloudTopicName>
+            <pointCloudTopicName>${robot_name}/${sensor_name}/depth/color/points</pointCloudTopicName>
             <pointCloudCutoff>0.3</pointCloudCutoff>
         </plugin>
     </gazebo>
