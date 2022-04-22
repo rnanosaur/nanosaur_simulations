@@ -57,6 +57,9 @@ def generate_launch_description():
     use_sim_time = LaunchConfiguration('use_sim_time', default='true')
     cover_type = LaunchConfiguration('cover_type')
     namespace = LaunchConfiguration('namespace', default="nanosaur")
+    
+    # Add option to publish pointcloud
+    publish_pointcloud=False
 
     nanosaur_cmd = DeclareLaunchArgument(
         name='namespace',
@@ -103,6 +106,7 @@ def generate_launch_description():
                              'xacro ', xacro_path, ' ',
                              'robot_name:=', namespace, ' ',
                              'cover_type:=', cover_type, ' ',
+                             'publish_pointcloud:=', publish_pointcloud, ' ',
                          ])
                      }]
     )
