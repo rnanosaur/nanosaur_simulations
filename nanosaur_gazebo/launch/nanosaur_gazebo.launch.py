@@ -25,6 +25,8 @@
 
 import os
 import xacro
+from pathlib import Path
+from dotenv import load_dotenv, dotenv_values
 
 from ament_index_python.packages import get_package_share_directory
 from launch.actions import DeclareLaunchArgument
@@ -42,6 +44,10 @@ def generate_launch_description():
     package_gazebo = get_package_share_directory('nanosaur_gazebo')
     gazebo_ros_path = get_package_share_directory('gazebo_ros')
     pkg_control = get_package_share_directory('nanosaur_control')
+
+    # Force load /opt/nanosaur/.env file
+    # https://pypi.org/project/python-dotenv/
+    load_dotenv('/opt/nanosaur/.env', override=True)
 
     cover_type_conf = os.getenv("NANOSAUR_COVER_TYPE", 'fisheye')
     print(f"Load cover_type from ENV: {cover_type_conf}")
