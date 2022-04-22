@@ -46,6 +46,7 @@ def generate_launch_description():
     cover_type_conf = os.getenv("NANOSAUR_COVER_TYPE", 'fisheye')
     print(f"Load cover_type from ENV: {cover_type_conf}")
 
+    rviz = LaunchConfiguration('rviz')
     world_file_name = LaunchConfiguration('world_file_name')
     use_sim_time = LaunchConfiguration('use_sim_time', default='true')
     cover_type = LaunchConfiguration('cover_type')
@@ -55,6 +56,11 @@ def generate_launch_description():
         name='namespace',
         default_value='nanosaur',
         description='nanosaur namespace name. If you are working with multiple robot you can change this namespace.')
+
+    rviz_cmd = DeclareLaunchArgument(
+        name='rviz',
+        default_value='True',
+        description='Flag to enable rviz visualization')
 
     gazebo_gui_cmd = DeclareLaunchArgument(
         name='gui',
@@ -126,6 +132,14 @@ def generate_launch_description():
             [os.path.join(gazebo_ros_path, 'launch'), '/gzclient.launch.py']),
         condition=IfCondition(LaunchConfiguration('gui'))
     )
+    
+    rviz2 = Node(
+        package='rviz2',
+        executable='rviz2',
+        name='rviz2',
+        output='screen',
+        condition=IfCondition(rviz)
+    )
 
     ###################### Twist controls ######################
 
@@ -140,15 +154,9 @@ def generate_launch_description():
         ]
     )
 
-    rviz2 = Node(
-        package='rviz2',
-        executable='rviz2',
-        name='rviz2',
-        output='screen',
-    )
-
     ld = LaunchDescription()
     ld.add_action(nanosaur_cmd)
+    ld.add_action(rviz_cmd)
     ld.add_action(gazebo_gui_cmd)
     ld.add_action(gazebo_server_cmd)
     ld.add_action(world_file_name_cmd)
@@ -158,7 +166,6 @@ def generate_launch_description():
     ld.add_action(robot_state_publisher_node)
     ld.add_action(spawn_robot)
     ld.add_action(twist_control_launch)
-    
     ld.add_action(rviz2)
 
     return ld
