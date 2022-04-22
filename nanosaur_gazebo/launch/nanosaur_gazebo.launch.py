@@ -59,7 +59,7 @@ def generate_launch_description():
     namespace = LaunchConfiguration('namespace', default="nanosaur")
     
     # Add option to publish pointcloud
-    publish_pointcloud=False
+    publish_pointcloud="False"
 
     nanosaur_cmd = DeclareLaunchArgument(
         name='namespace',
