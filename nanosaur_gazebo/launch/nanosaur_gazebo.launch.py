@@ -26,7 +26,6 @@
 import os
 import xacro
 from pathlib import Path
-from dotenv import load_dotenv, dotenv_values
 
 from ament_index_python.packages import get_package_share_directory
 from launch.actions import DeclareLaunchArgument
@@ -39,6 +38,10 @@ from launch.conditions import IfCondition
 from launch.actions import GroupAction
 from launch_ros.actions import PushRosNamespace
 
+try:
+    from dotenv import load_dotenv, dotenv_values
+except:
+    print("Skip load dotenv library")
 
 def generate_launch_description():
     package_gazebo = get_package_share_directory('nanosaur_gazebo')
@@ -47,7 +50,10 @@ def generate_launch_description():
 
     # Force load /opt/nanosaur/.env file
     # https://pypi.org/project/python-dotenv/
-    load_dotenv('/opt/nanosaur/.env', override=True)
+    try:
+        load_dotenv('/opt/nanosaur/.env', override=True)
+    except:
+        print("Skip load .env variables")
 
     cover_type_conf = os.getenv("NANOSAUR_COVER_TYPE", 'fisheye')
     print(f"Load cover_type from ENV: {cover_type_conf}")
@@ -60,6 +66,7 @@ def generate_launch_description():
     
     # Add option to publish pointcloud
     publish_pointcloud="False"
+    publish_odom_tf="False"
 
     nanosaur_cmd = DeclareLaunchArgument(
         name='namespace',
@@ -107,6 +114,7 @@ def generate_launch_description():
                              'robot_name:=', namespace, ' ',
                              'cover_type:=', cover_type, ' ',
                              'publish_pointcloud:=', publish_pointcloud, ' ',
+                             'publish_odom_tf:=', publish_odom_tf, ' ',
                          ])
                      }]
     )

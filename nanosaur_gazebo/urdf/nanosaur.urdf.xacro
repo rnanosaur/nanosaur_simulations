@@ -18,6 +18,7 @@
     <xacro:property name="cover_type_name" value="$(arg cover_type)" />
     
     <xacro:arg name="publish_pointcloud"  default="false"/>
+    <xacro:arg name="publish_odom_tf"  default="false"/>
 
     <xacro:arg name="depth_camera"  default="left"/>
     <xacro:arg name="resolution"    default="VGA"/>
@@ -36,7 +37,8 @@
                        robot_name="$(arg robot_name)"
                        update_rate="100.0"
                        wheel_radius="0.0150"
-                       wheel_separation="0.4" />
+                       wheel_separation="0.4"
+                       publish_odom_tf="$(arg publish_odom_tf)" />
 
     <!-- Nanosaur sensors -->
     <xacro:if value="${cover_type_name == 'pi'}">

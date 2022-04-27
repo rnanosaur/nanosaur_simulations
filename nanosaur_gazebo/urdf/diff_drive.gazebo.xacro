@@ -2,7 +2,7 @@
 <robot name="nanosaur_track" xmlns:xacro="http://ros.org/wiki/xacro">
 
     <!--Reference http://gazebosim.org/tutorials?tut=ros_gzplugins#DifferentialDrive -->
-    <xacro:macro name="track_drive" params="parent robot_name update_rate wheel_radius wheel_separation">
+    <xacro:macro name="track_drive" params="parent robot_name update_rate wheel_radius wheel_separation publish_odom_tf">
 
         <gazebo>
             <plugin filename="libgazebo_ros_diff_drive.so" name="skid_steer_drive_controller">
@@ -34,7 +34,7 @@
             <robot_base_frame>${parent}</robot_base_frame>
             <!-- Set to true to publish transforms for the odometry, defaults to true -->
             <publish_odom>true</publish_odom>
-            <publish_odom_tf>true</publish_odom_tf>
+            <publish_odom_tf>${publish_odom_tf}</publish_odom_tf>
             <!-- Set to true to publish transforms for the wheel links, defaults to false -->
             <publish_wheel_tf>true</publish_wheel_tf>
             <!-- Odometry source, 0 for ENCODER, 1 for WORLD, defaults to WORLD -->
