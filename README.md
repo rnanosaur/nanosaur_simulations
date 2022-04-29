@@ -19,4 +19,4 @@ Meet nanosaur:
 
 For more information about this project please follow [nanosaur.ai/about](https://nanosaur.ai/about/#license)
 
-**Cozmo.world and all models** gentle contribution from [Ricardo Tellez](https://www.theconstructsim.com/) @TheConstructAi
+**Cozmo.world and all models** gentle contribution from [Ricardo Tellez](https://www.theconstructsim.com/) - [**@TheConstructAi**](https://github.com/TheConstructAi)
