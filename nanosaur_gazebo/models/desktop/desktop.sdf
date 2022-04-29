@@ -1,0 +1,39 @@
+<?xml version="1.0" ?>
+<sdf version="1.5">
+  <model name="desktop">
+    <static>true</static>
+    <link name="desktop_link">
+        <collision name="desktop_collision">  
+         <geometry>
+            <mesh>
+                <uri>model://desktop/meshes/model.dae</uri>
+            </mesh>
+        </geometry>
+      </collision>
+      <collision name='main_table_collision'>
+            <pose>0.5 0.5 0.73 0 0 0</pose>
+            <geometry>
+              <box>
+              <size>0.9 1.9 0.05</size>
+            </box>
+          </geometry>
+      </collision>
+      <collision name='second_table_collision'>
+            <pose>1.5 1.50 0.73 0 0 1.7</pose>
+            <geometry>
+              <box>
+              <size>1.2 2 0.05</size>
+            </box>
+          </geometry>
+     </collision>
+      <visual name="desktop_mesh">
+        <cast_shadows>true</cast_shadows>
+        <geometry>
+            <mesh>
+                <uri>model://desktop/meshes/model.dae</uri>
+            </mesh>
+        </geometry>
+      </visual>
+    </link>
+  </model>
+</sdf>

@@ -6,12 +6,14 @@ project(nanosaur_gazebo)
 # Find ament packages and libraries for ament and system dependencies
 ################################################################################
 find_package(ament_cmake REQUIRED)
+find_package(robot_state_publisher REQUIRED)
+find_package(xacro REQUIRED)
 
 ################################################################################
 # Install
 ################################################################################
 install(
-  DIRECTORY launch worlds urdf
+  DIRECTORY launch models urdf worlds
   DESTINATION share/${PROJECT_NAME}
 )
 

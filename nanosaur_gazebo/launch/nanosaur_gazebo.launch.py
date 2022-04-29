@@ -90,7 +90,7 @@ def generate_launch_description():
 
     world_file_name_cmd = DeclareLaunchArgument(
         name='world_file_name',
-        default_value='empty_world.world',
+        default_value='cozmo.world',  # Empty world: empty_world.world
         description='Load gazebo world.')
 
     declare_cover_type_cmd = DeclareLaunchArgument(
