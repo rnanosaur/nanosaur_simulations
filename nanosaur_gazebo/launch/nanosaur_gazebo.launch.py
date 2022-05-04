@@ -24,7 +24,7 @@
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import os
-import xacro
+import yaml
 from pathlib import Path
 
 from ament_index_python.packages import get_package_share_directory
@@ -43,10 +43,59 @@ try:
 except:
     print("Skip load dotenv library")
 
+
+class Coordinate:
+
+    def safe_list_get(self, l, idx, default=0.0):
+        try:
+            return str(l[idx])
+        except IndexError:
+            return str(default)
+
+    def __init__(self, config) -> None:
+        position = config.get('xyz', [])
+        orientation = config.get('RPY', [])
+        self.x = self.safe_list_get(position, 0)
+        self.y = self.safe_list_get(position, 1)
+        self.z = self.safe_list_get(position, 2)
+        self.R = self.safe_list_get(orientation, 0)
+        self.P = self.safe_list_get(orientation, 1)
+        self.Y = self.safe_list_get(orientation, 2)
+        
+    def __repr__(self) -> str:
+        coordinate = f"xyz=[{self.x} {self.y} {self.z}] RPY=[{self.R} {self.P} {self.Y}]"
+        return coordinate
+
+
+def load_robot_position(config, world_file_name):
+    # Extract worldfile name from configuration
+    world_name = Path(world_file_name).stem
+    # Check fi file exist
+    if not os.path.isfile(config):
+        print("no file available")
+        return {}
+    # Load yml file
+    with open(config, "r") as stream:
+        try:
+            robot_config = yaml.safe_load(stream)
+        except yaml.YAMLError as exc:
+            print(exc)
+            return {}
+    # Check if world exist
+    if world_name not in robot_config:
+        return {}
+    # load position and orientation
+    config = robot_config[world_name]
+    # Extract configuration 
+    return Coordinate(config)
+
+
 def generate_launch_description():
     package_gazebo = get_package_share_directory('nanosaur_gazebo')
     gazebo_ros_path = get_package_share_directory('gazebo_ros')
     pkg_control = get_package_share_directory('nanosaur_control')
+    
+    default_world_name = 'cozmo.world' # Empty world: empty_world.world
 
     # Force load /opt/nanosaur/.env file
     # https://pypi.org/project/python-dotenv/
@@ -90,7 +139,7 @@ def generate_launch_description():
 
     world_file_name_cmd = DeclareLaunchArgument(
         name='world_file_name',
-        default_value='cozmo.world',  # Empty world: empty_world.world
+        default_value=default_world_name,
         description='Load gazebo world.')
 
     declare_cover_type_cmd = DeclareLaunchArgument(
@@ -118,8 +167,11 @@ def generate_launch_description():
                          ])
                      }]
     )
-
+    
+    # Load configuration from params
+    conf = load_robot_position(os.path.join(package_gazebo, 'params', 'spawn_robot.yml'), default_world_name)
     # Spawn robot
+    # https://github.com/ros-simulation/gazebo_ros_pkgs/blob/foxy/gazebo_ros/scripts/spawn_entity.py
     spawn_robot = Node(
         package='gazebo_ros',
         executable='spawn_entity.py',
@@ -128,7 +180,8 @@ def generate_launch_description():
         namespace=namespace,
         arguments=['-entity', 'nanosaur',
                    '-topic', 'robot_description',
-                   '-x', '0', '-y', '0', '-z', '0',
+                   '-x', conf.x, '-y', conf.y, '-z',conf.z,
+                   '-R', conf.R, '-P', conf.P, '-Y',conf.Y,
                    ]
     )
 
