@@ -13,7 +13,7 @@ find_package(xacro REQUIRED)
 # Install
 ################################################################################
 install(
-  DIRECTORY launch
+  DIRECTORY gui launch worlds
   DESTINATION share/${PROJECT_NAME}
 )
 

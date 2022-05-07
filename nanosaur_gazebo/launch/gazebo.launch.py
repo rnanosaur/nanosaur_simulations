@@ -117,6 +117,11 @@ def generate_launch_description():
     publish_pointcloud="False"
     publish_odom_tf="False"
 
+    use_sim_time_cmd = DeclareLaunchArgument(
+        name='use_sim_time',
+        default_value='true',
+        description='Use simulation (Gazebo) clock if true')
+
     nanosaur_cmd = DeclareLaunchArgument(
         name='namespace',
         default_value='nanosaur',
@@ -226,6 +231,7 @@ def generate_launch_description():
     )
 
     ld = LaunchDescription()
+    ld.add_action(use_sim_time_cmd)
     ld.add_action(nanosaur_cmd)
     ld.add_action(rviz_cmd)
     ld.add_action(gazebo_gui_cmd)

@@ -25,24 +25,27 @@
 
 import os
 
-from ament_index_python.packages import get_package_share_directory
-from launch.actions import DeclareLaunchArgument
+from ament_index_python.packages import get_package_share_directory, get_package_prefix
 from launch import LaunchDescription
-from launch_ros.actions import Node
-from launch.actions import IncludeLaunchDescription
+from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
-from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch_ros.actions import Node
+from launch.substitutions import Command
 
 
 def generate_launch_description():
-    package_ignition = get_package_share_directory('nanosaur_ignition')
+    package_gazebo = get_package_share_directory('nanosaur_gazebo')
+
+    cover_type_conf = os.getenv("NANOSAUR_COVER_TYPE", 'fisheye')
+    print(f"Load cover_type from ENV: {cover_type_conf}")
 
     use_sim_time = LaunchConfiguration('use_sim_time', default='true')
+    cover_type = LaunchConfiguration('cover_type')
     namespace = LaunchConfiguration('namespace', default="nanosaur")
-
-    launch_file_dir = os.path.join(package_ignition, 'launch')
-    basic_world = os.path.join(package_ignition, "worlds", "empty.sdf")
-    gui_config = os.path.join(package_ignition, "gui", "gui.config")
+    
+    # Add option to publish pointcloud
+    publish_pointcloud="False"
+    publish_odom_tf="False"
 
     use_sim_time_cmd = DeclareLaunchArgument(
         name='use_sim_time',
@@ -54,38 +57,37 @@ def generate_launch_description():
         default_value='nanosaur',
         description='nanosaur namespace name. If you are working with multiple robot you can change this namespace.')
 
-    ignition_spawn_entity = Node(
-        package='ros_ign_gazebo',
-        executable='create',
-        output='screen',
+    declare_cover_type_cmd = DeclareLaunchArgument(
+        name='cover_type',
+        default_value=cover_type_conf,
+        description='Cover type to use. Options: pi, fisheye, realsense, zed.')
+
+    # full  path to urdf and world file
+    # world = os.path.join(package_gazebo, "worlds", world_file_name)
+    xacro_path = os.path.join(package_gazebo, "urdf", "nanosaur.urdf.xacro")
+
+    # Launch Robot State Publisher
+    robot_state_publisher_node = Node(
+        package='robot_state_publisher',
+        executable='robot_state_publisher',
         namespace=namespace,
-        arguments=['-topic', 'robot_description',
-                   '-name', 'nanosaur',
-                   '-allow_renaming', 'true',
-                   '-x', '0.0',
-                   '-y', '0.0',
-                   '-z', '0.01'],
+        parameters=[{'use_sim_time': use_sim_time,
+                     'robot_description': Command(
+                         [
+                             'xacro ', xacro_path, ' ',
+                             'robot_name:=', namespace, ' ',
+                             'cover_type:=', cover_type, ' ',
+                             'publish_pointcloud:=', publish_pointcloud, ' ',
+                             'publish_odom_tf:=', publish_odom_tf, ' ',
+                         ])
+                     }]
     )
-
-    ign_gazebo = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource([os.path.join(get_package_share_directory('ros_ign_gazebo'),
-                                                    'launch', 'ign_gazebo.launch.py')]),
-        launch_arguments=[('ign_args', [' -r -v 3 ' + basic_world + ' '
-                                       # + ' --gui-config ' + gui_config
-                                        ])])
-
-    rsp_launcher = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            [launch_file_dir, '/robot_state_publisher.launch.py']),
-        launch_arguments={'use_sim_time': use_sim_time}.items(),
-    )
-
+    
     ld = LaunchDescription()
     ld.add_action(use_sim_time_cmd)
     ld.add_action(nanosaur_cmd)
-    ld.add_action(ign_gazebo)
-    ld.add_action(ignition_spawn_entity)
-    ld.add_action(rsp_launcher)
+    ld.add_action(declare_cover_type_cmd)
+    ld.add_action(robot_state_publisher_node)
 
     return ld
 # EOF
