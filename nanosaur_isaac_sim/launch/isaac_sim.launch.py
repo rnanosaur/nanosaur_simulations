@@ -23,17 +23,35 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
+import os
 from launch.actions import ExecuteProcess
 from launch_ros.actions import Node
 from launch import LaunchDescription
+from launch.substitutions import LaunchConfiguration
+from launch.actions import DeclareLaunchArgument
 
 
 def generate_launch_description():
+    
+    isaac_sim_release_name = "prod-isaac_sim-2021.2.1"
+    isaac_sim_release = LaunchConfiguration('isaac_sim_release')
+    
+    isaac_sim_path = os.path.join(os.environ['HOME'], ".local/share/ov/pkg", isaac_sim_release_name, "isaac-sim.sh")
+
+    isaac_sim_release_cmd = DeclareLaunchArgument(
+        name='isaac_sim_release',
+        default_value=isaac_sim_release_name,
+        description='NVIDIA Isaac SIM production release version')
 
 
+    isaac_sim_process = ExecuteProcess(
+        cmd=[isaac_sim_path],
+        output="screen",
+    )
 
     ld = LaunchDescription()
+    ld.add_action(isaac_sim_release_cmd)
+    ld.add_action(isaac_sim_process)
 
     return ld
 # EOF
