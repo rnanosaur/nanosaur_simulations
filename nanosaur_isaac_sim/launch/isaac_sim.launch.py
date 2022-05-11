@@ -43,9 +43,8 @@ def generate_launch_description():
         default_value=isaac_sim_release_name,
         description='NVIDIA Isaac SIM production release version')
 
-
     isaac_sim_process = ExecuteProcess(
-        cmd=[isaac_sim_path],
+        cmd=[isaac_sim_path, "--/persistent/exts/omni.isaac.app.setup/nucleusCheck=false"],
         output="screen",
     )
 
