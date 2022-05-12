@@ -36,11 +36,12 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 
 def generate_launch_description():
     package_ignition = get_package_share_directory('nanosaur_ignition')
+    nanosaur_simulations = get_package_share_directory('nanosaur_simulations')
 
     use_sim_time = LaunchConfiguration('use_sim_time', default='true')
     namespace = LaunchConfiguration('namespace', default="nanosaur")
 
-    launch_file_dir = os.path.join(package_ignition, 'launch')
+    launch_file_dir = os.path.join(nanosaur_simulations, 'launch')
     basic_world = os.path.join(package_ignition, "worlds", "empty.sdf")
     gui_config = os.path.join(package_ignition, "gui", "gui.config")
 

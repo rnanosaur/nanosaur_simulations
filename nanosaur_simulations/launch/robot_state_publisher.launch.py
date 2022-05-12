@@ -32,9 +32,21 @@ from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 from launch.substitutions import Command
 
+try:
+    from dotenv import load_dotenv, dotenv_values
+except:
+    print("Skip load dotenv library")
+
 
 def generate_launch_description():
-    package_gazebo = get_package_share_directory('nanosaur_gazebo')
+    nanosaur_simulations = get_package_share_directory('nanosaur_simulations')
+
+    # Force load /opt/nanosaur/.env file
+    # https://pypi.org/project/python-dotenv/
+    try:
+        load_dotenv('/opt/nanosaur/.env', override=True)
+    except:
+        print("Skip load .env variables")
 
     cover_type_conf = os.getenv("NANOSAUR_COVER_TYPE", 'fisheye')
     print(f"Load cover_type from ENV: {cover_type_conf}")
@@ -63,8 +75,8 @@ def generate_launch_description():
         description='Cover type to use. Options: pi, fisheye, realsense, zed.')
 
     # full  path to urdf and world file
-    # world = os.path.join(package_gazebo, "worlds", world_file_name)
-    xacro_path = os.path.join(package_gazebo, "urdf", "nanosaur.urdf.xacro")
+    # world = os.path.join(nanosaur_simulations, "worlds", world_file_name)
+    xacro_path = os.path.join(nanosaur_simulations, "urdf", "nanosaur.urdf.xacro")
 
     # Launch Robot State Publisher
     robot_state_publisher_node = Node(

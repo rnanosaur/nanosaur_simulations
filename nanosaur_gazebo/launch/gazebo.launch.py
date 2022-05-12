@@ -38,11 +38,6 @@ from launch.conditions import IfCondition
 from launch.actions import GroupAction
 from launch_ros.actions import PushRosNamespace
 
-try:
-    from dotenv import load_dotenv, dotenv_values
-except:
-    print("Skip load dotenv library")
-
 
 class Coordinate:
 
@@ -92,30 +87,18 @@ def load_robot_position(config, world_file_name):
 
 def generate_launch_description():
     package_gazebo = get_package_share_directory('nanosaur_gazebo')
+    nanosaur_simulations = get_package_share_directory('nanosaur_simulations')
     gazebo_ros_path = get_package_share_directory('gazebo_ros')
     pkg_control = get_package_share_directory('nanosaur_control')
     
     default_world_name = 'cozmo.world' # Empty world: empty_world.world
-
-    # Force load /opt/nanosaur/.env file
-    # https://pypi.org/project/python-dotenv/
-    try:
-        load_dotenv('/opt/nanosaur/.env', override=True)
-    except:
-        print("Skip load .env variables")
-
-    cover_type_conf = os.getenv("NANOSAUR_COVER_TYPE", 'fisheye')
-    print(f"Load cover_type from ENV: {cover_type_conf}")
+    
+    launch_file_dir = os.path.join(nanosaur_simulations, 'launch')
 
     rviz = LaunchConfiguration('rviz')
     world_file_name = LaunchConfiguration('world_file_name')
     use_sim_time = LaunchConfiguration('use_sim_time', default='true')
-    cover_type = LaunchConfiguration('cover_type')
     namespace = LaunchConfiguration('namespace', default="nanosaur")
-    
-    # Add option to publish pointcloud
-    publish_pointcloud="False"
-    publish_odom_tf="False"
 
     use_sim_time_cmd = DeclareLaunchArgument(
         name='use_sim_time',
@@ -146,33 +129,7 @@ def generate_launch_description():
         name='world_file_name',
         default_value=default_world_name,
         description='Load gazebo world.')
-
-    declare_cover_type_cmd = DeclareLaunchArgument(
-        name='cover_type',
-        default_value=cover_type_conf,
-        description='Cover type to use. Options: pi, fisheye, realsense, zed.')
-
-    # full  path to urdf and world file
-    # world = os.path.join(package_gazebo, "worlds", world_file_name)
-    xacro_path = os.path.join(package_gazebo, "urdf", "nanosaur.urdf.xacro")
-
-    # Launch Robot State Publisher
-    robot_state_publisher_node = Node(
-        package='robot_state_publisher',
-        executable='robot_state_publisher',
-        namespace=namespace,
-        parameters=[{'use_sim_time': use_sim_time,
-                     'robot_description': Command(
-                         [
-                             'xacro ', xacro_path, ' ',
-                             'robot_name:=', namespace, ' ',
-                             'cover_type:=', cover_type, ' ',
-                             'publish_pointcloud:=', publish_pointcloud, ' ',
-                             'publish_odom_tf:=', publish_odom_tf, ' ',
-                         ])
-                     }]
-    )
-    
+  
     # Load configuration from params
     conf = load_robot_position(os.path.join(package_gazebo, 'params', 'spawn_robot.yml'), default_world_name)
     # Spawn robot
@@ -209,6 +166,12 @@ def generate_launch_description():
         condition=IfCondition(LaunchConfiguration('gui'))
     )
     
+    rsp_launcher = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            [launch_file_dir, '/robot_state_publisher.launch.py']),
+        launch_arguments={'use_sim_time': use_sim_time}.items(),
+    )
+    
     rviz2 = Node(
         package='rviz2',
         executable='rviz2',
@@ -237,10 +200,9 @@ def generate_launch_description():
     ld.add_action(gazebo_gui_cmd)
     ld.add_action(gazebo_server_cmd)
     ld.add_action(world_file_name_cmd)
-    ld.add_action(declare_cover_type_cmd)
     ld.add_action(gazebo_server)
     ld.add_action(gazebo_gui)
-    ld.add_action(robot_state_publisher_node)
+    ld.add_action(rsp_launcher)
     ld.add_action(spawn_robot)
     ld.add_action(twist_control_launch)
     ld.add_action(rviz2)

@@ -3,14 +3,16 @@
 
     <!-- nanosaur parts -->
     <xacro:include filename="$(find nanosaur_description)/urdf/robot.urdf.xacro" />
+    <!-- materials -->
+    <xacro:include filename="$(find nanosaur_simulations)/urdf/materials.gazebo.xacro" />
     <!-- differential drive -->
-    <xacro:include filename="$(find nanosaur_gazebo)/urdf/diff_drive.gazebo.xacro" />
+    <xacro:include filename="$(find nanosaur_simulations)/urdf/diff_drive.gazebo.xacro" />
     <!-- Sensors -->
-    <xacro:include filename="$(find nanosaur_gazebo)/urdf/sensors/imu.gazebo.xacro" />
-    <xacro:include filename="$(find nanosaur_gazebo)/urdf/sensors/camera.gazebo.xacro" />
-    <xacro:include filename="$(find nanosaur_gazebo)/urdf/sensors/wide.gazebo.xacro" />
-    <xacro:include filename="$(find nanosaur_gazebo)/urdf/sensors/realsense.gazebo.xacro" />
-    <xacro:include filename="$(find nanosaur_gazebo)/urdf/sensors/zed.gazebo.xacro" />
+    <xacro:include filename="$(find nanosaur_simulations)/urdf/sensors/imu.gazebo.xacro" />
+    <xacro:include filename="$(find nanosaur_simulations)/urdf/sensors/camera.gazebo.xacro" />
+    <xacro:include filename="$(find nanosaur_simulations)/urdf/sensors/wide.gazebo.xacro" />
+    <xacro:include filename="$(find nanosaur_simulations)/urdf/sensors/realsense.gazebo.xacro" />
+    <xacro:include filename="$(find nanosaur_simulations)/urdf/sensors/zed.gazebo.xacro" />
 
     <xacro:arg name="robot_name" default="nanosaur" />
     <!-- camera definitions -->

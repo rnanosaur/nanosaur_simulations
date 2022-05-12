@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(nanosaur_gazebo)
+project(nanosaur_simulations)
 
 ################################################################################
 # Find ament packages and libraries for ament and system dependencies
@@ -13,7 +13,7 @@ find_package(xacro REQUIRED)
 # Install
 ################################################################################
 install(
-  DIRECTORY launch models params worlds
+  DIRECTORY launch urdf
   DESTINATION share/${PROJECT_NAME}
 )
 
