@@ -23,6 +23,8 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import os
+
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
@@ -33,21 +35,43 @@ from launch_ros.actions import PushRosNamespace
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 
+try:
+    from dotenv import load_dotenv, dotenv_values
+except:
+    print("Skip load dotenv library")
+
+
 def generate_launch_description():
     pkg_control = get_package_share_directory('nanosaur_control')
-    
+
+    # Force load /opt/nanosaur/.env file
+    # https://pypi.org/project/python-dotenv/
+    try:
+        load_dotenv('/opt/nanosaur/.env', override=True)
+    except:
+        print("Skip load .env variables")
+
+    cover_type_conf = os.getenv("NANOSAUR_COVER_TYPE", 'fisheye')
+    print(f"Load cover_type from ENV: {cover_type_conf}")
+
     use_sim_time = LaunchConfiguration('use_sim_time', default='true')
+    cover_type = LaunchConfiguration('cover_type')
     namespace = LaunchConfiguration('namespace', default="nanosaur")
 
     use_sim_time_cmd = DeclareLaunchArgument(
         'use_sim_time',
         default_value='true',
         description='Use simulation (Gazebo) clock if true')
-    
+
     nanosaur_cmd = DeclareLaunchArgument(
         name='namespace',
         default_value='nanosaur',
         description='nanosaur namespace name. If you are working with multiple robot you can change this namespace.')
+
+    declare_cover_type_cmd = DeclareLaunchArgument(
+        name='cover_type',
+        default_value=cover_type_conf,
+        description='Cover type to use. Options: pi, fisheye, realsense, zed.')
 
     scan_bridge = Node(
         package='ros_ign_bridge',
@@ -71,21 +95,46 @@ def generate_launch_description():
     )
 
     # cmd_vel bridge
-    cmd_vel_bridge = Node(package='ros_ign_bridge', executable='parameter_bridge',
-                          name='cmd_vel_bridge',
-                          output='screen',
-                          namespace=namespace,
-                          parameters=[{
-                              'use_sim_time': use_sim_time
-                          }],
-                          arguments=[
-                              '/cmd_vel' + '@geometry_msgs/msg/Twist' +
-                              '@ignition.msgs.Twist',
-                          ],
-                          remappings=[
-                              ('/cmd_vel',
-                               '/nanosaur/cmd_vel')
-                          ])
+    cmd_vel_bridge = Node(
+        package='ros_ign_bridge',
+        executable='parameter_bridge',
+        name='cmd_vel_bridge',
+        output='screen',
+        namespace=namespace,
+        parameters=[{'use_sim_time': use_sim_time}],
+        arguments=['/cmd_vel@geometry_msgs/msg/Twist@ignition.msgs.Twist'],
+        remappings=[
+            ('/cmd_vel', '/nanosaur/cmd_vel')
+        ]
+        )
+  
+    ###################### Camera ######################
+
+    # camera bridge
+    camera_bridge = Node(
+        package='ros_ign_bridge',
+        executable='parameter_bridge',
+        name='camera_bridge',
+        output='screen',
+        namespace='camera',
+        parameters=[{'use_sim_time': use_sim_time}],
+        arguments=['/camera@sensor_msgs/msg/Image@ignition.msgs.Image',
+                   '/camera_info@sensor_msgs/msg/CameraInfo@ignition.msgs.CameraInfo'],
+        remappings=[
+            ('/camera', 'image_raw'),
+            ('/camera_info', 'camera_info')
+        ]
+    )
+
+    # include another launch file in nanosaur namespace
+    camera_group = GroupAction(
+        actions=[
+            # push-ros-namespace to set namespace of included nodes
+            PushRosNamespace(namespace),
+            # nanosaur twist launch
+            camera_bridge
+        ]
+    )
 
     ###################### Twist controls ######################
 
@@ -102,11 +151,13 @@ def generate_launch_description():
 
     ld = LaunchDescription()
     ld.add_action(use_sim_time_cmd)
+    ld.add_action(declare_cover_type_cmd)
     ld.add_action(nanosaur_cmd)
     # ld.add_action(imu_bridge)
     # ld.add_action(scan_bridge)
     ld.add_action(twist_control_launch)
     ld.add_action(cmd_vel_bridge)
+    ld.add_action(camera_group)
 
     return ld
 # EOF

@@ -1,0 +1,72 @@
+<?xml version="1.0" ?>
+<robot name="nanosaur_sensor_camera"
+    xmlns:xacro="http://ros.org/wiki/xacro">
+
+    <!-- Sensors -->
+    <xacro:property name="sensor_mass" value="0.01"/>
+    <xacro:property name="camera_box_x" value="0.02"/>
+    <xacro:property name="camera_box_y" value="0.01"/>
+    <xacro:property name="camera_box_z" value="0.01"/>
+
+    <xacro:macro name="normal_camera" params="parent_name sensor_name robot_name *camera_pose">
+
+        <link name='${sensor_name}_camera_link'>
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <geometry>
+                    <box size="${camera_box_x} ${camera_box_y} ${camera_box_z}"/>
+                </geometry>
+            </visual>
+        </link>
+
+        <joint name="${sensor_name}_camera_link_joint" type="fixed">
+            <xacro:insert_block name="camera_pose"/>
+            <parent link="${parent_name}"/>
+            <child link="${sensor_name}_camera_link"/>
+        </joint>
+
+
+        <link name="${sensor_name}_camera_link_frame">
+        </link>
+
+        <joint name="${sensor_name}_camera_frame_joint" type="fixed">
+            <origin xyz="${camera_box_x} 0 0" rpy="0 0 0" />
+            <parent link="${sensor_name}_camera_link" />
+            <child link="${sensor_name}_camera_link_frame" />
+            <axis xyz="0 0 0"/>
+        </joint>
+
+        <gazebo reference="${sensor_name}_camera_link_frame">
+            <sensor type="camera" name="${sensor_name}">
+                <always_on>true</always_on>
+                <ignition_frame_id>base_camera</ignition_frame_id>
+                <visualize>true</visualize>
+                <topic>camera</topic>
+                <update_rate>10.0</update_rate>
+                <camera name="${sensor_name}_SP">
+                    <horizontal_fov>1.3962634</horizontal_fov>
+                    <pose>0 0 0 0 0 0</pose>
+                    <image>
+                        <width>640</width>
+                        <height>480</height>
+                        <format>R8G8B8</format>
+                    </image>
+                    <clip>
+                        <near>0.005</near>
+                        <far>20.0</far>
+                    </clip>
+                    <noise>
+                        <type>gaussian</type>
+                        <!-- Noise is sampled independently per pixel on each frame.
+                             That pixel's noise value is added to each of its color
+                             channels, which at that point lie in the range [0,1]. -->
+                        <mean>0.0</mean>
+                        <stddev>0.007</stddev>
+                    </noise>
+                </camera>
+            </sensor>
+        </gazebo>
+
+    </xacro:macro>
+
+</robot>

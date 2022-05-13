@@ -4,7 +4,9 @@
     <!-- nanosaur parts -->
     <xacro:include filename="$(find nanosaur_description)/urdf/robot.urdf.xacro" />
     <!-- differential drive -->
-    <xacro:include filename="$(find nanosaur_ignition)/urdf/diff_drive.gazebo.xacro" />
+    <xacro:include filename="$(find nanosaur_ignition)/urdf/diff_drive.ignition.xacro" />
+    <!-- Sensors -->
+    <xacro:include filename="$(find nanosaur_ignition)/urdf/sensors/camera.ignition.xacro" />
 
     <xacro:arg name="robot_name" default="nanosaur" />
     <!-- camera definitions -->
@@ -36,6 +38,9 @@
 
     <!-- Nanosaur sensors -->
     <xacro:if value="${cover_type_name == 'pi'}">
+        <xacro:normal_camera parent_name="camera_board" sensor_name="camera" robot_name="$(arg robot_name)">
+            <origin xyz="0 0 0" rpy="0 -${M_PI/2} 0" />
+        </xacro:normal_camera>
     </xacro:if>
     <xacro:if value="${cover_type_name == 'fisheye'}">
     </xacro:if>
