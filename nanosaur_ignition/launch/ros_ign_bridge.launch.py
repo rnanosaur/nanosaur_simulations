@@ -34,6 +34,7 @@ from launch.actions import GroupAction
 from launch_ros.actions import PushRosNamespace
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.conditions import LaunchConfigurationEquals
 
 try:
     from dotenv import load_dotenv, dotenv_values
@@ -123,7 +124,42 @@ def generate_launch_description():
         remappings=[
             ('/camera', 'image_raw'),
             ('/camera_info', 'camera_info')
-        ]
+        ],
+        condition=LaunchConfigurationEquals('cover_type', 'pi')
+    )
+    
+    # realsense infra1 bridge
+    realsense_infra1_bridge = Node(
+        package='ros_ign_bridge',
+        executable='parameter_bridge',
+        name='realsense_infra1_bridge',
+        output='screen',
+        namespace='camera',
+        parameters=[{'use_sim_time': use_sim_time}],
+        arguments=['/infra1/camera_raw@sensor_msgs/msg/Image@ignition.msgs.Image',
+                   '/infra1/camera_info@sensor_msgs/msg/CameraInfo@ignition.msgs.CameraInfo'],
+        remappings=[
+            ('/infra1/camera_raw', 'infra1/image_raw'),
+            ('/infra1/camera_info', 'infra1/camera_info')
+        ],
+        condition=LaunchConfigurationEquals('cover_type', 'realsense')
+    )
+    
+    # realsense infra2 bridge
+    realsense_infra2_bridge = Node(
+        package='ros_ign_bridge',
+        executable='parameter_bridge',
+        name='realsense_infra2_bridge',
+        output='screen',
+        namespace='camera',
+        parameters=[{'use_sim_time': use_sim_time}],
+        arguments=['/infra2/camera_raw@sensor_msgs/msg/Image@ignition.msgs.Image',
+                   '/infra2/camera_info@sensor_msgs/msg/CameraInfo@ignition.msgs.CameraInfo'],
+        remappings=[
+            ('/infra2/camera_raw', 'infra2/image_raw'),
+            ('/infra2/camera_info', 'infra2/camera_info')
+        ],
+        condition=LaunchConfigurationEquals('cover_type', 'realsense')
     )
 
     # include another launch file in nanosaur namespace
@@ -131,8 +167,10 @@ def generate_launch_description():
         actions=[
             # push-ros-namespace to set namespace of included nodes
             PushRosNamespace(namespace),
-            # nanosaur twist launch
-            camera_bridge
+            # nanosaur cameras
+            camera_bridge,
+            realsense_infra1_bridge,
+            realsense_infra2_bridge
         ]
     )
 

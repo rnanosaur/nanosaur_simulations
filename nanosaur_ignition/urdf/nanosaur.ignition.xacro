@@ -7,6 +7,7 @@
     <xacro:include filename="$(find nanosaur_ignition)/urdf/diff_drive.ignition.xacro" />
     <!-- Sensors -->
     <xacro:include filename="$(find nanosaur_ignition)/urdf/sensors/camera.ignition.xacro" />
+    <xacro:include filename="$(find nanosaur_ignition)/urdf/sensors/realsense.ignition.xacro" />
 
     <xacro:arg name="robot_name" default="nanosaur" />
     <!-- camera definitions -->
@@ -45,6 +46,7 @@
     <xacro:if value="${cover_type_name == 'fisheye'}">
     </xacro:if>
     <xacro:if value="${cover_type_name == 'realsense'}">
+        <xacro:realsense_camera parent_name="camera_board" sensor_name="camera" robot_name="$(arg robot_name)" publish_pointcloud="$(arg publish_pointcloud)" />
     </xacro:if>
     <xacro:if value="${cover_type_name == 'zed'}">
 
