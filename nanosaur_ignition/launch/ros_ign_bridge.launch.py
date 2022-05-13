@@ -23,19 +23,31 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
-
+from launch.actions import GroupAction
+from launch_ros.actions import PushRosNamespace
+from launch.actions import IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 
 def generate_launch_description():
+    pkg_control = get_package_share_directory('nanosaur_control')
+    
     use_sim_time = LaunchConfiguration('use_sim_time', default='true')
+    namespace = LaunchConfiguration('namespace', default="nanosaur")
 
     use_sim_time_cmd = DeclareLaunchArgument(
         'use_sim_time',
         default_value='true',
         description='Use simulation (Gazebo) clock if true')
+    
+    nanosaur_cmd = DeclareLaunchArgument(
+        name='namespace',
+        default_value='nanosaur',
+        description='nanosaur namespace name. If you are working with multiple robot you can change this namespace.')
 
     scan_bridge = Node(
         package='ros_ign_bridge',
@@ -62,22 +74,38 @@ def generate_launch_description():
     cmd_vel_bridge = Node(package='ros_ign_bridge', executable='parameter_bridge',
                           name='cmd_vel_bridge',
                           output='screen',
+                          namespace=namespace,
                           parameters=[{
                               'use_sim_time': use_sim_time
                           }],
                           arguments=[
                               '/cmd_vel' + '@geometry_msgs/msg/Twist' +
-                              '[ignition.msgs.Twist',
+                              '@ignition.msgs.Twist',
                           ],
                           remappings=[
                               ('/cmd_vel',
-                               'diff_drive_base_controller/cmd_vel_unstamped')
+                               '/nanosaur/cmd_vel')
                           ])
+
+    ###################### Twist controls ######################
+
+    # include another launch file in nanosaur namespace
+    twist_control_launch = GroupAction(
+        actions=[
+            # push-ros-namespace to set namespace of included nodes
+            PushRosNamespace(namespace),
+            # nanosaur twist launch
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource([pkg_control, '/launch/twist_control.launch.py']))
+        ]
+    )
 
     ld = LaunchDescription()
     ld.add_action(use_sim_time_cmd)
+    ld.add_action(nanosaur_cmd)
     # ld.add_action(imu_bridge)
     # ld.add_action(scan_bridge)
+    ld.add_action(twist_control_launch)
     ld.add_action(cmd_vel_bridge)
 
     return ld

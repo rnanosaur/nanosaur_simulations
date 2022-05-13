@@ -3,6 +3,8 @@
 
     <!-- nanosaur parts -->
     <xacro:include filename="$(find nanosaur_description)/urdf/robot.urdf.xacro" />
+    <!-- differential drive -->
+    <xacro:include filename="$(find nanosaur_ignition)/urdf/diff_drive.gazebo.xacro" />
 
     <xacro:arg name="robot_name" default="nanosaur" />
     <!-- camera definitions -->
@@ -23,6 +25,14 @@
                     use_nominal_extrinsics="true"
                     diff_drive_emulation="true"
                     path_meshes="file://$(find nanosaur_description)/meshes" />
+
+    <!-- nanosaur differential drive controller -->
+    <xacro:track_drive parent="base_link"
+                       robot_name="$(arg robot_name)"
+                       update_rate="100.0"
+                       wheel_radius="0.0150"
+                       wheel_separation="0.4"
+                       publish_odom_tf="$(arg publish_odom_tf)" />
 
     <!-- Nanosaur sensors -->
     <xacro:if value="${cover_type_name == 'pi'}">
