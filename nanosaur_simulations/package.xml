@@ -29,7 +29,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 <package format="3">
    <name>nanosaur_simulations</name>
    <version>1.0.0</version>
-   <description>nanosaur base launchers</description>
+   <description>nanosaur simulations launchers</description>
 
    <author email="raffaello@rnext.it">Raffaello Bonghi</author>
    <maintainer email="raffaello@rnext.it">Raffaello Bonghi</maintainer>
@@ -40,13 +40,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    <url type="bugtracker">https://github.com/rnanosaur/nanosaur_simulations/issues</url>
 
    <buildtool_depend>ament_cmake</buildtool_depend>
-
-   <test_depend>ament_lint_auto</test_depend>
-   <test_depend>ament_lint_common</test_depend>
-
-   <exec_depend>xacro</exec_depend>
-   <exec_depend>robot_state_publisher</exec_depend>
-   <exec_depend>nanosaur_description</exec_depend>
 
    <export>
       <build_type>ament_cmake</build_type>

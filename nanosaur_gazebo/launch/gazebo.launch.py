@@ -87,13 +87,12 @@ def load_robot_position(config, world_file_name):
 
 def generate_launch_description():
     package_gazebo = get_package_share_directory('nanosaur_gazebo')
-    nanosaur_simulations = get_package_share_directory('nanosaur_simulations')
     gazebo_ros_path = get_package_share_directory('gazebo_ros')
     pkg_control = get_package_share_directory('nanosaur_control')
     
     default_world_name = 'cozmo.world' # Empty world: empty_world.world
     
-    launch_file_dir = os.path.join(nanosaur_simulations, 'launch')
+    launch_file_dir = os.path.join(package_gazebo, 'launch')
 
     rviz = LaunchConfiguration('rviz')
     world_file_name = LaunchConfiguration('world_file_name')

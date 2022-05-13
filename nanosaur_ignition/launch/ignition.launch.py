@@ -25,25 +25,31 @@
 
 import os
 
-from ament_index_python.packages import get_package_share_directory
+from ament_index_python.packages import get_package_share_directory, get_package_prefix
 from launch.actions import DeclareLaunchArgument
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch.actions import IncludeLaunchDescription
+from launch.actions import IncludeLaunchDescription, SetEnvironmentVariable
 from launch.substitutions import LaunchConfiguration
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 
 
 def generate_launch_description():
     package_ignition = get_package_share_directory('nanosaur_ignition')
-    nanosaur_simulations = get_package_share_directory('nanosaur_simulations')
 
     use_sim_time = LaunchConfiguration('use_sim_time', default='true')
     namespace = LaunchConfiguration('namespace', default="nanosaur")
 
-    launch_file_dir = os.path.join(nanosaur_simulations, 'launch')
+    launch_file_dir = os.path.join(package_ignition, 'launch')
     basic_world = os.path.join(package_ignition, "worlds", "empty.sdf")
     gui_config = os.path.join(package_ignition, "gui", "gui.config")
+
+    # Set ignition resource path
+    ign_resource_path = SetEnvironmentVariable(
+        name='IGN_GAZEBO_RESOURCE_PATH', value=[
+            os.path.join(get_package_prefix('nanosaur_description'), "share"),
+            ":" +
+            os.path.join(get_package_share_directory('nanosaur_gazebo'), "models")])
 
     use_sim_time_cmd = DeclareLaunchArgument(
         name='use_sim_time',
@@ -72,7 +78,7 @@ def generate_launch_description():
         PythonLaunchDescriptionSource([os.path.join(get_package_share_directory('ros_ign_gazebo'),
                                                     'launch', 'ign_gazebo.launch.py')]),
         launch_arguments=[('ign_args', [' -r -v 3 ' + basic_world + ' '
-                                       # + ' --gui-config ' + gui_config
+                                        + ' --gui-config ' + gui_config
                                         ])])
 
     rsp_launcher = IncludeLaunchDescription(
@@ -81,12 +87,20 @@ def generate_launch_description():
         launch_arguments={'use_sim_time': use_sim_time}.items(),
     )
 
+    ros_ign_bridge = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            [launch_file_dir, '/ros_ign_bridge.launch.py']),
+        launch_arguments={'use_sim_time': use_sim_time}.items(),
+    )
+
     ld = LaunchDescription()
+    ld.add_action(ign_resource_path)
     ld.add_action(use_sim_time_cmd)
     ld.add_action(nanosaur_cmd)
     ld.add_action(ign_gazebo)
     ld.add_action(ignition_spawn_entity)
     ld.add_action(rsp_launcher)
+    ld.add_action(ros_ign_bridge)
 
     return ld
 # EOF

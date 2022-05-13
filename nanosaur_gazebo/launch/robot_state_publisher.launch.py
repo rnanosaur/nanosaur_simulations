@@ -25,7 +25,7 @@
 
 import os
 
-from ament_index_python.packages import get_package_share_directory, get_package_prefix
+from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
@@ -39,7 +39,7 @@ except:
 
 
 def generate_launch_description():
-    nanosaur_simulations = get_package_share_directory('nanosaur_simulations')
+    package_gazebo = get_package_share_directory('nanosaur_gazebo')
 
     # Force load /opt/nanosaur/.env file
     # https://pypi.org/project/python-dotenv/
@@ -76,7 +76,7 @@ def generate_launch_description():
 
     # full  path to urdf and world file
     # world = os.path.join(nanosaur_simulations, "worlds", world_file_name)
-    xacro_path = os.path.join(nanosaur_simulations, "urdf", "nanosaur.urdf.xacro")
+    xacro_path = os.path.join(package_gazebo, "urdf", "nanosaur.gazebo.xacro")
 
     # Launch Robot State Publisher
     robot_state_publisher_node = Node(
