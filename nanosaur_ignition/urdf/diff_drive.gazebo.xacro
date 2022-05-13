@@ -1,9 +1,11 @@
 <?xml version="1.0"?>
 <robot name="nanosaur_track" xmlns:xacro="http://ros.org/wiki/xacro">
 
-    <!--Reference http://gazebosim.org/tutorials?tut=ros_gzplugins#DifferentialDrive -->
-    <xacro:macro name="track_drive" params="parent robot_name update_rate wheel_radius wheel_separation publish_odom_tf">
-
+        <!-- reference  
+            https://github.com/gazebosim/gz-sim/blob/5b21ec87306c35b3494adc25694fac8b8d1bb7de/src/systems/diff_drive/DiffDrive.hh#L57 
+            https://github.com/Blast545/ign_tutorials
+        -->
+        <xacro:macro name="track_drive" params="parent robot_name update_rate wheel_radius wheel_separation publish_odom_tf">
         <gazebo>
             <plugin name="ignition::gazebo::systems::DiffDrive" filename="libignition-gazebo-diff-drive-system.so">
             <!-- Plugin update rate in Hz -->
@@ -36,6 +38,9 @@
             <odometry_source>1</odometry_source>
             <!-- Set to true to publish sensor_msgs/JointState on /joint_states for the wheel joints, defaults to false -->
             <publis_wheel_joint_state>false</publis_wheel_joint_state>
+            <!-- Custom topic that this system will subscribe to in order to
+                 receive command velocity messages. This element if optional, and the
+                 default value is /model/{name_of_model}/cmd_vel -->
             <topic>cmd_vel</topic>
             </plugin>
 
