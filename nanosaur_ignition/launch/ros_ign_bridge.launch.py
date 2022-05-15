@@ -103,12 +103,15 @@ def generate_launch_description():
         output='screen',
         namespace=namespace,
         parameters=[{'use_sim_time': use_sim_time}],
-        arguments=['/cmd_vel@geometry_msgs/msg/Twist@ignition.msgs.Twist'],
+        arguments=['/cmd_vel@geometry_msgs/msg/Twist@ignition.msgs.Twist',
+                   '/world/empty/model/nanosaur/joint_state@sensor_msgs/msg/JointState[ignition.msgs.Model',
+                   ],
         remappings=[
-            ('/cmd_vel', '/nanosaur/cmd_vel')
+            ('/cmd_vel', '/nanosaur/cmd_vel'),
+            ('/world/empty/model/nanosaur/joint_state', 'joint_states'),
         ]
         )
-  
+
     ###################### Camera ######################
 
     # camera bridge
@@ -129,33 +132,20 @@ def generate_launch_description():
     )
     
     # realsense infra1 bridge
-    realsense_infra1_bridge = Node(
+    realsense_bridge = Node(
         package='ros_ign_bridge',
         executable='parameter_bridge',
-        name='realsense_infra1_bridge',
+        name='realsense_bridge',
         output='screen',
         namespace='camera',
         parameters=[{'use_sim_time': use_sim_time}],
         arguments=['/infra1/camera_raw@sensor_msgs/msg/Image@ignition.msgs.Image',
-                   '/infra1/camera_info@sensor_msgs/msg/CameraInfo@ignition.msgs.CameraInfo'],
-        remappings=[
-            ('/infra1/camera_raw', 'infra1/image_raw'),
-            ('/infra1/camera_info', 'infra1/camera_info')
-        ],
-        condition=LaunchConfigurationEquals('cover_type', 'realsense')
-    )
-    
-    # realsense infra2 bridge
-    realsense_infra2_bridge = Node(
-        package='ros_ign_bridge',
-        executable='parameter_bridge',
-        name='realsense_infra2_bridge',
-        output='screen',
-        namespace='camera',
-        parameters=[{'use_sim_time': use_sim_time}],
-        arguments=['/infra2/camera_raw@sensor_msgs/msg/Image@ignition.msgs.Image',
+                   '/infra1/camera_info@sensor_msgs/msg/CameraInfo@ignition.msgs.CameraInfo',
+                   '/infra2/camera_raw@sensor_msgs/msg/Image@ignition.msgs.Image',
                    '/infra2/camera_info@sensor_msgs/msg/CameraInfo@ignition.msgs.CameraInfo'],
         remappings=[
+            ('/infra1/camera_raw', 'infra1/image_raw'),
+            ('/infra1/camera_info', 'infra1/camera_info'),
             ('/infra2/camera_raw', 'infra2/image_raw'),
             ('/infra2/camera_info', 'infra2/camera_info')
         ],
@@ -169,8 +159,7 @@ def generate_launch_description():
             PushRosNamespace(namespace),
             # nanosaur cameras
             camera_bridge,
-            realsense_infra1_bridge,
-            realsense_infra2_bridge
+            realsense_bridge
         ]
     )
 
