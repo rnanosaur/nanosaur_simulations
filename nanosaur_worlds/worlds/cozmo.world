@@ -1,0 +1,27 @@
+<?xml version="1.0" ?>
+<sdf version="1.5">
+  <world name="cozmo">
+
+    <!-- A global light source -->
+    <include>
+      <uri>model://sun</uri>
+    </include>
+
+    <!-- A ground plane -->
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+
+    <include>
+      <static>true</static>
+      <pose>0 1.6 0.75 0 0 0</pose>
+      <uri>model://books</uri>
+    </include>
+
+    <include>
+      <static>true</static>
+      <uri>model://desktop</uri>
+    </include>
+
+  </world>
+</sdf>

@@ -1,0 +1,84 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <world name="office">
+
+    <include>
+      <uri>model://sun</uri>
+    </include>
+
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+
+    <include>
+      <name>Table_1</name>
+      <static>true</static>
+      <pose>0 0 0 0 0 1.57079632679</pose>
+      <uri>model://AdjTable</uri>
+    </include>
+
+    <include>
+      <name>Table_2</name>
+      <static>true</static>
+      <pose>0 1.6 0 0 0 1.57079632679</pose>
+      <uri>model://AdjTable</uri>
+    </include>
+
+    <include>
+      <name>Drawer_1</name>
+      <static>true</static>
+      <pose>0 -0.45 0 0 0 1.57079632679</pose>
+      <uri>model://Drawer</uri>
+    </include>
+
+    <include>
+      <name>Drawer_2</name>
+      <static>true</static>
+      <pose>0 1.15 0 0 0 1.57079632679</pose>
+      <uri>model://Drawer</uri>
+    </include>
+
+    <include>
+      <name>Office_chair</name>
+      <static>true</static>
+      <pose>0.5 0 0 0 0 -1.57079632679</pose>
+      <uri>model://OfficeChairBlack</uri>
+    </include>
+
+    <include>
+      <name>Monitor_and_keyboard</name>
+      <static>true</static>
+      <pose>-0.28 -0.30 0.8 0 0 -2.8</pose>
+      <uri>model://MonitorAndKeyboard</uri>
+    </include>
+
+    <include>
+      <name>Books_1</name>
+      <static>true</static>
+      <pose>-0.25 0.4 0.8 0 0 1.57079632679</pose>
+      <uri>model://books</uri>
+    </include>
+
+    <include>
+      <name>Books_2</name>
+      <static>true</static>
+      <pose>-0.25 0.8 0.8 0 0 1.57079632679</pose>
+      <uri>model://books</uri>
+    </include>
+
+    <include>
+      <name>Books_3</name>
+      <static>true</static>
+      <pose>-0.25 1.5 0.8 0 0 1.57079632679</pose>
+      <uri>model://books</uri>
+    </include>
+
+    <include>
+      <name>toy</name>
+      <static>true</static>
+      <pose>0.12 1.5 0.8 0 0 1.3</pose>
+      <uri>model://BABY_CAR</uri>
+    </include>
+
+  </world>
+</sdf>

@@ -1,0 +1,35 @@
+model {
+  file: "model.sdf"
+}
+name: "BABY_CAR"
+description: "BABY CAR\nThis colorful toy car has a flexible body that reacts to your baby\357\277\275s touch."
+version: 1
+authors {
+  name: "Google"
+  email: "scanned-objects@google.com"
+}
+legal {
+  copyright: "Copyright 2020 Google LLC."
+  license: "Creative Commons Attribution 4.0 International"
+}
+annotations {
+  key: "brand"
+  value: "PlanToys"
+}
+annotations {
+  key: "mpn"
+  value: "5229"
+}
+annotations {
+  key: "sku"
+  value: "0522900"
+}
+compatibilities {
+  name: "Gazebo"
+  version {
+    major: 11
+  }
+}
+categories {
+  first: "Toys"
+}

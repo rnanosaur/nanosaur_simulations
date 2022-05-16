@@ -13,7 +13,7 @@ find_package(xacro REQUIRED)
 # Install
 ################################################################################
 install(
-  DIRECTORY gui launch urdf worlds
+  DIRECTORY gui launch urdf
   DESTINATION share/${PROJECT_NAME}
 )
 

@@ -47,7 +47,7 @@ class Coordinate:
         except IndexError:
             return str(default)
 
-    def __init__(self, config) -> None:
+    def __init__(self, config={}) -> None:
         position = config.get('xyz', [])
         orientation = config.get('RPY', [])
         self.x = self.safe_list_get(position, 0)
@@ -68,17 +68,17 @@ def load_robot_position(config, world_file_name):
     # Check fi file exist
     if not os.path.isfile(config):
         print("no file available")
-        return {}
+        return Coordinate()
     # Load yml file
     with open(config, "r") as stream:
         try:
             robot_config = yaml.safe_load(stream)
         except yaml.YAMLError as exc:
             print(exc)
-            return {}
+            return Coordinate()
     # Check if world exist
     if world_name not in robot_config:
-        return {}
+        return Coordinate()
     # load position and orientation
     config = robot_config[world_name]
     # Extract configuration 
@@ -87,10 +87,11 @@ def load_robot_position(config, world_file_name):
 
 def generate_launch_description():
     package_gazebo = get_package_share_directory('nanosaur_gazebo')
+    package_worlds = get_package_share_directory('nanosaur_worlds')
     gazebo_ros_path = get_package_share_directory('gazebo_ros')
     pkg_control = get_package_share_directory('nanosaur_control')
     
-    default_world_name = 'cozmo.world' # Empty world: empty_world.world
+    default_world_name = 'office.world' # Empty world: empty_world.world
     
     launch_file_dir = os.path.join(package_gazebo, 'launch')
 
@@ -130,7 +131,7 @@ def generate_launch_description():
         description='Load gazebo world.')
   
     # Load configuration from params
-    conf = load_robot_position(os.path.join(package_gazebo, 'params', 'spawn_robot.yml'), default_world_name)
+    conf = load_robot_position(os.path.join(package_worlds, 'params', 'spawn_robot.yml'), default_world_name)
     # Spawn robot
     # https://github.com/ros-simulation/gazebo_ros_pkgs/blob/foxy/gazebo_ros/scripts/spawn_entity.py
     spawn_robot = Node(
@@ -153,7 +154,7 @@ def generate_launch_description():
     gazebo_server = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             [os.path.join(gazebo_ros_path, 'launch'), '/gzserver.launch.py']),
-        launch_arguments={'world': [package_gazebo, "/worlds/", world_file_name],
+        launch_arguments={'world': [package_worlds, "/worlds/", world_file_name],
                           'verbose': 'true',
                           'init': 'false'}.items(),
         condition=IfCondition(LaunchConfiguration('server'))
