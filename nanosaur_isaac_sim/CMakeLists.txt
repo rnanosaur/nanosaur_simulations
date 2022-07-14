@@ -13,7 +13,7 @@ find_package(xacro REQUIRED)
 # Install
 ################################################################################
 install(
-  DIRECTORY launch
+  DIRECTORY launch urdf
   DESTINATION share/${PROJECT_NAME}
 )
 

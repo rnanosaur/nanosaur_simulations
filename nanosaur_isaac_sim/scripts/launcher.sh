@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright (C) 2022, Raffaello Bonghi <raffaello@rnext.it>
 # All rights reserved
 # Redistribution and use in source and binary forms, with or without
@@ -23,34 +24,11 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import os
-from launch.actions import ExecuteProcess
-from launch_ros.actions import Node
-from launch import LaunchDescription
-from launch.substitutions import LaunchConfiguration
-from launch.actions import DeclareLaunchArgument
 
+ISAAC_SIM_VERSION="isaac_sim-2022.1.0"
+ISAAC_SIM_NANOSAUR_LAUNCHER="nanosaur_isaac_sim/scripts/nanosaur_isaac_sim_sa.py"
 
-def generate_launch_description():
-    
-    isaac_sim_release_name = "prod-isaac_sim-2021.2.1"
-    isaac_sim_release = LaunchConfiguration('isaac_sim_release')
-    
-    isaac_sim_path = os.path.join(os.environ['HOME'], ".local/share/ov/pkg", isaac_sim_release_name, "isaac-sim.sh")
+echo "Isaac SIM nanosaur launcher"
 
-    isaac_sim_release_cmd = DeclareLaunchArgument(
-        name='isaac_sim_release',
-        default_value=isaac_sim_release_name,
-        description='NVIDIA Isaac SIM production release version')
-
-    isaac_sim_process = ExecuteProcess(
-        cmd=[isaac_sim_path, "--/persistent/exts/omni.isaac.app.setup/nucleusCheck=false"],
-        output="screen",
-    )
-
-    ld = LaunchDescription()
-    ld.add_action(isaac_sim_release_cmd)
-    ld.add_action(isaac_sim_process)
-
-    return ld
-# EOF
+# Run Isaac SIM stand alone
+bash "$HOME/.local/share/ov/pkg/$ISAAC_SIM_VERSION/python.sh" $(pwd)/$ISAAC_SIM_NANOSAUR_LAUNCHER
