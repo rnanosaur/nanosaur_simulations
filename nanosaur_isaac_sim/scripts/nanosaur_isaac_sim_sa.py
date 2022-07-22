@@ -35,6 +35,8 @@ from omni.isaac.core import World
 from omni.isaac.core.utils.stage import is_stage_loading
 from omni.isaac.core.utils.extensions import enable_extension, get_extension_path_from_name
 import omni
+import omni.graph.core as og
+from omni.isaac.core_nodes.scripts.utils import set_target_prims
 
 # enable ROS2 bridge extension
 enable_extension("omni.isaac.ros2_bridge")
@@ -134,43 +136,43 @@ class RobotLoader(Node):
         )
         # Wait a step
         self.isaac_world.wait_step_reload()
-        # Get Isaac SIM world stage
-        stage = self.isaac_world.get_stage()
-        # Get handle to the Drive API for both wheels
-        left_wheel_drive = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/nanosaur/base_link/sprocket_left_joint"), "angular")
-        right_wheel_drive = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/nanosaur/base_link/sprocket_right_joint"), "angular")
 
-        # Get handle to the Drive API for both wheels
-        #left_wheel_drive = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/carter/chassis_link/left_wheel"), "angular")
-        #right_wheel_drive = UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath("/carter/chassis_link/right_wheel"), "angular")
-
-        # Set the velocity drive target in degrees/second
-        left_wheel_drive.GetTargetVelocityAttr().Set(150)
-        right_wheel_drive.GetTargetVelocityAttr().Set(150)
-
-        # Set the drive damping, which controls the strength of the velocity drive
-        left_wheel_drive.GetDampingAttr().Set(15000)
-        right_wheel_drive.GetDampingAttr().Set(15000)
-
-        # Set the drive stiffness, which controls the strength of the position drive
-        # In this case because we want to do velocity control this should be set to zero
-        left_wheel_drive.GetStiffnessAttr().Set(0)
-        right_wheel_drive.GetStiffnessAttr().Set(0)
-
-        # dynamic control can also be used to interact with the imported urdf.
-        dc = _dynamic_control.acquire_dynamic_control_interface()
-
-        art = dc.get_articulation(stage_path)
-
-        if art == _dynamic_control.INVALID_HANDLE:
-            print(f"{stage_path} is not an articulation")
-        else:
-            print(f"Got articulation {stage_path} with handle {art}")
+            
+        # Creating a action graph with ROS component nodes
+        try:
+            og.Controller.edit(
+                {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
+                {
+                    og.Controller.Keys.CREATE_NODES: [
+                        ("OnImpulseEvent", "omni.graph.action.OnImpulseEvent"),
+                        ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
+                        ("PublishJointState", "omni.isaac.ros2_bridge.ROS2PublishJointState"),
+                        ("SubscribeJointState", "omni.isaac.ros2_bridge.ROS2SubscribeJointState"),
+                        ("PublishTF", "omni.isaac.ros2_bridge.ROS2PublishTransformTree"),
+                        ("PublishClock", "omni.isaac.ros2_bridge.ROS2PublishClock"),
+                    ],
+                    og.Controller.Keys.CONNECT: [
+                        ("OnImpulseEvent.outputs:execOut", "PublishJointState.inputs:execIn"),
+                        ("OnImpulseEvent.outputs:execOut", "SubscribeJointState.inputs:execIn"),
+                        ("OnImpulseEvent.outputs:execOut", "PublishTF.inputs:execIn"),
+                        ("OnImpulseEvent.outputs:execOut", "PublishClock.inputs:execIn"),
+                        ("ReadSimTime.outputs:simulationTime", "PublishJointState.inputs:timeStamp"),
+                        ("ReadSimTime.outputs:simulationTime", "PublishClock.inputs:timeStamp"),
+                        ("ReadSimTime.outputs:simulationTime", "PublishTF.inputs:timeStamp"),
+                    ],
+                },
+            )
+        except Exception as e:
+            print(e)
+            
+        # Wait a step
+        self.isaac_world.wait_step_reload()
 
     def callback_description(self, msg):
         # callback function to set the cube position to a new one upon receiving a (empty) ROS2 message
         print(f"Load robot")
         robot_urdf = msg.data
+        print(robot_urdf)
         text_file = open(PATH_LOCAL_URDF_FOLDER, "w")
         n = text_file.write(robot_urdf)
         text_file.close()

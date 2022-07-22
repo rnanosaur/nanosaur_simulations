@@ -88,7 +88,7 @@ def generate_launch_description():
     use_sim_time = LaunchConfiguration('use_sim_time', default='true')
     namespace = LaunchConfiguration('namespace', default="nanosaur")
     
-    default_world_name = 'office.sdf' # Empty world: empty.sdf
+    default_world_name = 'empty.sdf' # Empty world: empty.sdf
 
     launch_file_dir = os.path.join(package_ignition, 'launch')
     gui_config = os.path.join(package_ignition, "gui", "gui.config")
@@ -145,6 +145,11 @@ def generate_launch_description():
         launch_arguments={'use_sim_time': use_sim_time}.items(),
     )
 
+    ros_control_launcher = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([launch_file_dir, '/control.launch.py']),
+        launch_arguments={'use_sim_time': use_sim_time}.items(),
+    )
+
     ld = LaunchDescription()
     ld.add_action(ign_resource_path)
     ld.add_action(use_sim_time_cmd)
@@ -153,6 +158,7 @@ def generate_launch_description():
     ld.add_action(ignition_spawn_entity)
     ld.add_action(rsp_launcher)
     ld.add_action(ros_ign_bridge)
+    ld.add_action(ros_control_launcher)
 
     return ld
 # EOF

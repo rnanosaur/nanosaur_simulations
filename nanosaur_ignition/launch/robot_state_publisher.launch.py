@@ -31,6 +31,7 @@ from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 from launch.substitutions import Command
+import xacro
 
 try:
     from dotenv import load_dotenv, dotenv_values

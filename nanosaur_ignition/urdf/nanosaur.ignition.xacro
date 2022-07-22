@@ -5,6 +5,7 @@
     <xacro:include filename="$(find nanosaur_description)/urdf/robot.urdf.xacro" />
     <!-- differential drive -->
     <xacro:include filename="$(find nanosaur_ignition)/urdf/diff_drive.ignition.xacro" />
+    <xacro:include filename="$(find nanosaur_ignition)/urdf/ros2_control.ignition.xacro" />
     <!-- Sensors -->
     <xacro:include filename="$(find nanosaur_ignition)/urdf/sensors/camera.ignition.xacro" />
     <xacro:include filename="$(find nanosaur_ignition)/urdf/sensors/realsense.ignition.xacro" />
@@ -13,7 +14,9 @@
     <!-- camera definitions -->
     <xacro:arg name="cover_type" default="fisheye" /> <!--options: pi, fisheye, realsense, zedmini -->
     <xacro:property name="cover_type_name" value="$(arg cover_type)" />
-    
+    <!-- control definitions -->
+    <xacro:property name="control_type_name" value="ros2_control" /> <!--options: ros2_control, diff_drive -->
+
     <xacro:arg name="publish_pointcloud"  default="false"/>
     <xacro:arg name="publish_odom_tf"  default="false"/>
 
@@ -26,16 +29,20 @@
     <!--https://github.com/ros-simulation/gazebo_ros_pkgs/pull/1284 -->
     <xacro:nanosaur cover_type="$(arg cover_type)"
                     use_nominal_extrinsics="true"
-                    diff_drive_emulation="true"
-                    path_meshes="file://$(find nanosaur_description)/meshes" />
+                    diff_drive_emulation="true"/>
 
+    <xacro:if value="${control_type_name == 'ros2_control'}">
+        <xacro:nanosaur_ros2_control/>
+    </xacro:if>
     <!-- nanosaur differential drive controller -->
-    <xacro:track_drive parent="base_link"
-                       robot_name="$(arg robot_name)"
-                       update_rate="100.0"
-                       wheel_radius="0.0150"
-                       wheel_separation="0.4"
-                       publish_odom_tf="$(arg publish_odom_tf)" />
+    <xacro:if value="${control_type_name == 'diff_drive'}">
+        <xacro:track_drive parent="base_link"
+                        robot_name="$(arg robot_name)"
+                        update_rate="100.0"
+                        wheel_radius="0.0150"
+                        wheel_separation="0.4"
+                        publish_odom_tf="$(arg publish_odom_tf)" />
+    </xacro:if>
 
     <!-- Nanosaur sensors -->
     <xacro:if value="${cover_type_name == 'pi'}">
