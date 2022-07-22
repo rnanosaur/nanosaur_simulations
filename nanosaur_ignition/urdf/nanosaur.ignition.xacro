@@ -12,10 +12,10 @@
 
     <xacro:arg name="robot_name" default="nanosaur" />
     <!-- camera definitions -->
-    <xacro:arg name="cover_type" default="fisheye" /> <!--options: pi, fisheye, realsense, zedmini -->
+    <xacro:arg name="cover_type" default="fisheye" /> <!--options pi, fisheye, realsense, zedmini -->
     <xacro:property name="cover_type_name" value="$(arg cover_type)" />
     <!-- control definitions -->
-    <xacro:property name="control_type_name" value="ros2_control" /> <!--options: ros2_control, diff_drive -->
+    <xacro:property name="control_type_name" value="ros2_control" /> <!--options ros2_control, diff_drive -->
 
     <xacro:arg name="publish_pointcloud"  default="false"/>
     <xacro:arg name="publish_odom_tf"  default="false"/>
@@ -32,7 +32,7 @@
                     diff_drive_emulation="true"/>
 
     <xacro:if value="${control_type_name == 'ros2_control'}">
-        <xacro:nanosaur_ros2_control/>
+        <xacro:nanosaur_ros2_control robot_name="$(arg robot_name)" />
     </xacro:if>
     <!-- nanosaur differential drive controller -->
     <xacro:if value="${control_type_name == 'diff_drive'}">
