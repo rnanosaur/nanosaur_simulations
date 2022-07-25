@@ -28,8 +28,8 @@ import yaml
 from pathlib import Path
 
 from ament_index_python.packages import get_package_share_directory, get_package_prefix
-from launch.actions import DeclareLaunchArgument
-from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument, OpaqueFunction
+from launch import LaunchDescription, LaunchContext
 from launch_ros.actions import Node
 from launch.actions import IncludeLaunchDescription, SetEnvironmentVariable
 from launch.substitutions import LaunchConfiguration
@@ -81,18 +81,55 @@ def load_robot_position(config, world_file_name):
     return Coordinate(config)
 
 
-def generate_launch_description():
+def launch_ignition_setup(context: LaunchContext, support_namespace, support_world):
+    """ Reference:
+        https://answers.ros.org/question/396345/ros2-launch-file-how-to-convert-launchargument-to-string/ 
+        https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/blob/main/ur_moveit_config/launch/ur_moveit.launch.py
+    """
     package_ignition = get_package_share_directory('nanosaur_ignition')
     package_worlds = get_package_share_directory('nanosaur_worlds')
+    # render namespace, dumping the support_package.
+    namespace = context.perform_substitution(support_namespace)
+    world_name = context.perform_substitution(support_world)
+    print(f"Loading world: {world_name}")
+    gui_config = os.path.join(package_ignition, "gui", "gui.config")
+    basic_world = os.path.join(package_worlds, "worlds", world_name)
+    
+    # Load configuration from params
+    conf = load_robot_position(os.path.join(package_worlds, 'params', 'spawn_robot.yml'), world_name)
+    ignition_spawn_entity = Node(
+        package='ros_ign_gazebo',
+        executable='create',
+        output='screen',
+        namespace=namespace,
+        arguments=['-topic', 'robot_description',
+                   '-name', 'nanosaur',
+                   '-allow_renaming', 'true',
+                   '-x', conf.x, '-y', conf.y, '-z',conf.z,
+                   '-R', conf.R, '-P', conf.P, '-Y',conf.Y,
+                   ],
+    )
+    
+    ign_gazebo = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([os.path.join(get_package_share_directory('ros_ign_gazebo'),
+                                                    'launch', 'ign_gazebo.launch.py')]),
+        launch_arguments=[('ign_args', [' -r -v 3 ' + basic_world + ' '
+                                        + ' --gui-config ' + gui_config
+                                        ])])
+    
+    return [ignition_spawn_entity, ign_gazebo]
+    
+
+def generate_launch_description():
+    package_ignition = get_package_share_directory('nanosaur_ignition')
+
+    default_world_name = 'lab.sdf' # Empty world: empty.sdf
 
     use_sim_time = LaunchConfiguration('use_sim_time', default='true')
     namespace = LaunchConfiguration('namespace', default="nanosaur")
+    world_name = LaunchConfiguration('world_name', default=default_world_name)
     
-    default_world_name = 'empty.sdf' # Empty world: empty.sdf
-
     launch_file_dir = os.path.join(package_ignition, 'launch')
-    gui_config = os.path.join(package_ignition, "gui", "gui.config")
-    basic_world = os.path.join(package_worlds, "worlds", default_world_name)
 
     # Set ignition resource path
     ign_resource_path = SetEnvironmentVariable(
@@ -111,27 +148,10 @@ def generate_launch_description():
         default_value='nanosaur',
         description='nanosaur namespace name. If you are working with multiple robot you can change this namespace.')
 
-    # Load configuration from params
-    conf = load_robot_position(os.path.join(package_worlds, 'params', 'spawn_robot.yml'), default_world_name)
-    ignition_spawn_entity = Node(
-        package='ros_ign_gazebo',
-        executable='create',
-        output='screen',
-        namespace=namespace,
-        arguments=['-topic', 'robot_description',
-                   '-name', 'nanosaur',
-                   '-allow_renaming', 'true',
-                   '-x', conf.x, '-y', conf.y, '-z',conf.z,
-                   '-R', conf.R, '-P', conf.P, '-Y',conf.Y,
-                   ],
-    )
-
-    ign_gazebo = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource([os.path.join(get_package_share_directory('ros_ign_gazebo'),
-                                                    'launch', 'ign_gazebo.launch.py')]),
-        launch_arguments=[('ign_args', [' -r -v 3 ' + basic_world + ' '
-                                        + ' --gui-config ' + gui_config
-                                        ])])
+    world_name_cmd = DeclareLaunchArgument(
+        name='world_name',
+        default_value=default_world_name,
+        description='Simulation world name.')
 
     rsp_launcher = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -154,8 +174,8 @@ def generate_launch_description():
     ld.add_action(ign_resource_path)
     ld.add_action(use_sim_time_cmd)
     ld.add_action(nanosaur_cmd)
-    ld.add_action(ign_gazebo)
-    ld.add_action(ignition_spawn_entity)
+    ld.add_action(world_name_cmd)
+    ld.add_action(OpaqueFunction(function=launch_ignition_setup, args=[namespace, world_name]))
     ld.add_action(rsp_launcher)
     ld.add_action(ros_ign_bridge)
     ld.add_action(ros_control_launcher)

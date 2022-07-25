@@ -28,12 +28,12 @@ import yaml
 from pathlib import Path
 
 from ament_index_python.packages import get_package_share_directory
-from launch.actions import DeclareLaunchArgument
-from launch.substitutions import Command, LaunchConfiguration
+from launch.substitutions import LaunchConfiguration
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
-from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument, OpaqueFunction
+from launch import LaunchDescription, LaunchContext
 from launch.conditions import IfCondition
 from launch.actions import GroupAction
 from launch_ros.actions import PushRosNamespace
@@ -85,6 +85,36 @@ def load_robot_position(config, world_file_name):
     return Coordinate(config)
 
 
+def launch_gazebo_setup(context: LaunchContext, support_namespace, support_world):
+    """ Reference:
+        https://answers.ros.org/question/396345/ros2-launch-file-how-to-convert-launchargument-to-string/ 
+        https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/blob/main/ur_moveit_config/launch/ur_moveit.launch.py
+    """
+    package_worlds = get_package_share_directory('nanosaur_worlds')
+    # render namespace, dumping the support_package.
+    namespace = context.perform_substitution(support_namespace)
+    world_name = context.perform_substitution(support_world)
+    print(f"Loading world: {world_name}")
+    # Load configuration from params
+    conf = load_robot_position(os.path.join(package_worlds, 'params', 'spawn_robot.yml'), world_name)
+    # Spawn robot
+    # https://github.com/ros-simulation/gazebo_ros_pkgs/blob/foxy/gazebo_ros/scripts/spawn_entity.py
+    spawn_robot = Node(
+        package='gazebo_ros',
+        executable='spawn_entity.py',
+        name='spawn_entity',
+        output='screen',
+        namespace=namespace,
+        arguments=['-entity', 'nanosaur',
+                   '-topic', 'robot_description',
+                   '-x', conf.x, '-y', conf.y, '-z',conf.z,
+                   '-R', conf.R, '-P', conf.P, '-Y',conf.Y,
+                   ]
+    )
+
+    return [spawn_robot]
+
+
 def generate_launch_description():
     package_gazebo = get_package_share_directory('nanosaur_gazebo')
     package_worlds = get_package_share_directory('nanosaur_worlds')
@@ -129,23 +159,6 @@ def generate_launch_description():
         name='world_file_name',
         default_value=default_world_name,
         description='Load gazebo world.')
-  
-    # Load configuration from params
-    conf = load_robot_position(os.path.join(package_worlds, 'params', 'spawn_robot.yml'), default_world_name)
-    # Spawn robot
-    # https://github.com/ros-simulation/gazebo_ros_pkgs/blob/foxy/gazebo_ros/scripts/spawn_entity.py
-    spawn_robot = Node(
-        package='gazebo_ros',
-        executable='spawn_entity.py',
-        name='spawn_entity',
-        output='screen',
-        namespace=namespace,
-        arguments=['-entity', 'nanosaur',
-                   '-topic', 'robot_description',
-                   '-x', conf.x, '-y', conf.y, '-z',conf.z,
-                   '-R', conf.R, '-P', conf.P, '-Y',conf.Y,
-                   ]
-    )
 
     # start gazebo, notice we are using libgazebo_ros_factory.so instead of libgazebo_ros_init.so
     # That is because only libgazebo_ros_factory.so contains the service call to /spawn_entity
@@ -203,7 +216,7 @@ def generate_launch_description():
     ld.add_action(gazebo_server)
     ld.add_action(gazebo_gui)
     ld.add_action(rsp_launcher)
-    ld.add_action(spawn_robot)
+    ld.add_action(OpaqueFunction(function=launch_gazebo_setup, args=[namespace]))
     ld.add_action(twist_control_launch)
     ld.add_action(rviz2)
 

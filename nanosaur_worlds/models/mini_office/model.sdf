@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+<sdf version="1.6">
+    <model name="mini_office">
+        <static>true</static>
+        <link name="base_link">
+            <collision name="collision">
+                <pose>0 0 0 0 0 0</pose>
+                <geometry>
+                    <mesh>
+                        <uri>meshes/mini_office.dae</uri>
+                        <scale>0.5 0.5 0.5</scale>
+                    </mesh>
+                </geometry>
+            </collision>
+            <visual name="Wall_visual">
+                <geometry>
+                    <mesh>
+                        <uri>meshes/mini_office.dae</uri>
+                        <scale>0.5 0.5 0.5</scale>
+                        <submesh>
+                            <name>Wall</name>
+                            <center>false</center>
+                        </submesh>
+                    </mesh>
+                </geometry>
+                <material>
+                    <diffuse>1.0 1.0 1.0</diffuse>
+                    <specular>0.2 0.2 0.2</specular>
+                    <pbr>
+                        <metal>
+                            <albedo_map>materials/textures/Wall_White.png</albedo_map>
+                            <roughness_map>materials/textures/Wall_White.png</roughness_map>
+                            <environment_map>materials/textures/IndoorCubemap.dds</environment_map>
+                            <light_map uv_set="1">materials/textures/LightmapEqualizeHistogram.png</light_map>
+                            <metalness>0.0</metalness>
+                        </metal>
+                    </pbr>
+                    <!-- fallback to script if no PBR support-->
+                    <script>
+                        <uri>materials/scripts/</uri>
+                        <uri>materials/textures/</uri>
+                        <name>Indoor/Wall_Diffuse</name>
+                    </script>
+                </material>
+            </visual>
+            <visual name="Floor_visual">
+                <geometry>
+                    <mesh>
+                        <uri>meshes/mini_office.dae</uri>
+                        <scale>0.5 0.5 0.5</scale>
+                        <submesh>
+                            <name>Floor</name>
+                            <center>false</center>
+                        </submesh>
+                    </mesh>
+                </geometry>
+                <material>
+                    <diffuse>1.0 1.0 1.0</diffuse>
+                    <specular>0.1 0.1 0.1</specular>
+                    <pbr>
+                        <metal>
+                            <albedo_map>materials/textures/Floor_Albedo.png</albedo_map>
+                            <normal_map>materials/textures/Floor_Normal.png</normal_map>
+                            <roughness_map>materials/textures/Floor_Roughness.png</roughness_map>
+                            <environment_map>materials/textures/IndoorCubemap.dds</environment_map>
+                            <light_map uv_set="1">materials/textures/LightmapEqualizeHistogram.png</light_map>
+                            <metalness>0.0</metalness>
+                        </metal>
+                    </pbr>
+                    <!-- fallback to script if no PBR support-->
+                    <script>
+                        <uri>materials/scripts/</uri>
+                        <uri>materials/textures/</uri>
+                        <name>Indoor/Floor_Diffuse</name>
+                    </script>
+                </material>
+            </visual>
+        </link>
+    </model>
+</sdf>

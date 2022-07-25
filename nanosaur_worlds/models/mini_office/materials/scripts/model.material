@@ -1,0 +1,39 @@
+material Indoor/Floor_Diffuse
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture Floor_Albedo.png
+      }
+    }
+  }
+}
+material Indoor/CeilingTiles_Diffuse
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture CeilingTiles_Albedo.png
+      }
+    }
+  }
+}
+material Indoor/Wall_Diffuse
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture Wall_Albedo.png
+      }
+    }
+  }
+}
