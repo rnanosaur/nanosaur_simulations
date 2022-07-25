@@ -1,0 +1,14 @@
+model {
+  file: "model.sdf"
+  file_format {
+    version {
+      major: 1
+      minor: 6
+    }
+    name: "sdf"
+  }
+}
+name: "aws_robomaker_warehouse_ClutteringC_01"
+authors {
+}
+

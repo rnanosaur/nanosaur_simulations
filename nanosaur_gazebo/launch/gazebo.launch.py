@@ -121,12 +121,12 @@ def generate_launch_description():
     gazebo_ros_path = get_package_share_directory('gazebo_ros')
     pkg_control = get_package_share_directory('nanosaur_control')
     
-    default_world_name = 'office.world' # Empty world: empty_world.world
+    default_world_name = 'lab.world' # Empty world: empty.world
     
     launch_file_dir = os.path.join(package_gazebo, 'launch')
 
     rviz = LaunchConfiguration('rviz')
-    world_file_name = LaunchConfiguration('world_file_name')
+    world_name = LaunchConfiguration('world_name')
     use_sim_time = LaunchConfiguration('use_sim_time', default='true')
     namespace = LaunchConfiguration('namespace', default="nanosaur")
 
@@ -155,8 +155,8 @@ def generate_launch_description():
         default_value='true',
         description='Set to "false" not to run gzserver.')
 
-    world_file_name_cmd = DeclareLaunchArgument(
-        name='world_file_name',
+    world_name_cmd = DeclareLaunchArgument(
+        name='world_name',
         default_value=default_world_name,
         description='Load gazebo world.')
 
@@ -167,7 +167,7 @@ def generate_launch_description():
     gazebo_server = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             [os.path.join(gazebo_ros_path, 'launch'), '/gzserver.launch.py']),
-        launch_arguments={'world': [package_worlds, "/worlds/", world_file_name],
+        launch_arguments={'world': [package_worlds, "/worlds/", world_name],
                           'verbose': 'true',
                           'init': 'false'}.items(),
         condition=IfCondition(LaunchConfiguration('server'))
@@ -212,11 +212,11 @@ def generate_launch_description():
     ld.add_action(rviz_cmd)
     ld.add_action(gazebo_gui_cmd)
     ld.add_action(gazebo_server_cmd)
-    ld.add_action(world_file_name_cmd)
+    ld.add_action(world_name_cmd)
     ld.add_action(gazebo_server)
     ld.add_action(gazebo_gui)
     ld.add_action(rsp_launcher)
-    ld.add_action(OpaqueFunction(function=launch_gazebo_setup, args=[namespace]))
+    ld.add_action(OpaqueFunction(function=launch_gazebo_setup, args=[namespace, world_name]))
     ld.add_action(twist_control_launch)
     ld.add_action(rviz2)
 

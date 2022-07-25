@@ -1,0 +1,13 @@
+material Warehouse/Cluttering
+{
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture aws_robomaker_warehouse_ClutteringC_01.png
+      }
+    }
+  }
+}
