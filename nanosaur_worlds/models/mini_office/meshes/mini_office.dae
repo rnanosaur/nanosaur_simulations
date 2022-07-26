@@ -16,9 +16,6 @@
     <up_axis>Z_UP</up_axis>
   </asset>
   <library_images>
-    <image id="MapFBXASC032FBXASC03518-image" name="MapFBXASC032FBXASC03518">
-      <init_from>../materials/textures/CeilingTiles_Albedo.png</init_from>
-    </image>
     <image id="MapFBXASC032FBXASC03522-image" name="MapFBXASC032FBXASC03522">
       <init_from>../materials/textures/CeilingTiles_Emissive.png</init_from>
     </image>

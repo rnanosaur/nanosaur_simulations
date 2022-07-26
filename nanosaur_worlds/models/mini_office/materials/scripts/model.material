@@ -11,19 +11,6 @@ material Indoor/Floor_Diffuse
     }
   }
 }
-material Indoor/CeilingTiles_Diffuse
-{
-  technique
-  {
-    pass
-    {
-      texture_unit
-      {
-        texture CeilingTiles_Albedo.png
-      }
-    }
-  }
-}
 material Indoor/Wall_Diffuse
 {
   technique
