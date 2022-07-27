@@ -23,23 +23,32 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
+import sys
+import carb
 from omni.isaac.kit import SimulationApp
 
-simulation_app = SimulationApp(
-    {"renderer": "RayTracedLighting", "headless": False})
+CONFIG = {"renderer": "RayTracedLighting", "headless": False}
 
-from pxr import Sdf, Gf, UsdPhysics, UsdLux, PhysxSchema
-from omni.isaac.dynamic_control import _dynamic_control
-from omni.isaac.core import World
+# Example ROS2 bridge sample demonstrating the manual loading of Multiple Robot Navigation scenario
+simulation_app = SimulationApp(CONFIG)
+
+from omni.isaac.core.utils.extensions import enable_extension
 from omni.isaac.core.utils.stage import is_stage_loading
-from omni.isaac.core.utils.extensions import enable_extension, get_extension_path_from_name
-import omni
-import omni.graph.core as og
-from omni.isaac.core_nodes.scripts.utils import set_target_prims
+from omni.isaac.core import World, SimulationContext
+from omni.isaac.core.utils import nucleus
+from omni.kit import commands
+from omni import usd
+
 
 # enable ROS2 bridge extension
 enable_extension("omni.isaac.ros2_bridge")
+
+# Locate assets root folder to load sample
+assets_root_path = nucleus.get_assets_root_path()
+if assets_root_path is None:
+    carb.log_error("Could not find Isaac Sim assets folder")
+    simulation_app.close()
+    sys.exit()
 
 simulation_app.update()
 
@@ -52,73 +61,58 @@ PATH_LOCAL_URDF_FOLDER="/tmp/robot.urdf"
 
 class IsaacWorld():
     
-    def __init__(self):
-        # setting up the world
-        self.timeline = omni.timeline.get_timeline_interface()
+    def __init__(self, stage_path=""):
         # Setting up scene
-        self.setup_scene()
-        
-    def setup_scene(self):
-        self.ros_world = World(stage_units_in_meters=1.0)
-        self.ros_world.scene.add_default_ground_plane()
-        # Get stage handle
-        self.stage = omni.usd.get_context().get_stage()
-        # Enable physics
-        scene = UsdPhysics.Scene.Define(self.stage, Sdf.Path("/physicsScene"))
-        # Set gravity
-        scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
-        scene.CreateGravityMagnitudeAttr().Set(9.81)
-        # Set solver settings
-        PhysxSchema.PhysxSceneAPI.Apply(self.stage.GetPrimAtPath("/physicsScene"))
-        physxSceneAPI = PhysxSchema.PhysxSceneAPI.Get(self.stage, "/physicsScene")
-        physxSceneAPI.CreateEnableCCDAttr(True)
-        physxSceneAPI.CreateEnableStabilizationAttr(True)
-        physxSceneAPI.CreateEnableGPUDynamicsAttr(False)
-        physxSceneAPI.CreateBroadphaseTypeAttr("MBP")
-        physxSceneAPI.CreateSolverTypeAttr("TGS")
-        # reset world
-        self.ros_world.reset()
-
-    def get_stage(self):
-        return self.stage
+        if stage_path:
+            self.simulation_context = SimulationContext(stage_units_in_meters=1.0)
+            usd_path = assets_root_path + stage_path
+            usd.get_context().open_stage(usd_path, None)
+        else:
+            self.simulation_context = World(stage_units_in_meters=1.0)
+            self.simulation_context.scene.add_default_ground_plane()
+        # need to initialize physics getting any articulation..etc
+        self.simulation_context.initialize_physics()
+        # Wait two frames so that stage starts loading
+        simulation_app.update()
+        simulation_app.update()
     
     def wait_step_reload(self):
-        self.ros_world.step(render=True)
+        self.simulation_context.step(render=True)
         print("Loading stage...")
         while is_stage_loading():
             simulation_app.update()
         print("Loading Complete")
 
     def start_simulation(self):
-        self.timeline.play()
+        self.simulation_context.play()
 
     def run_simulation(self, node):
         while simulation_app.is_running():
-            self.ros_world.step(render=True)
+            self.simulation_context.step(render=True)
             rclpy.spin_once(node, timeout_sec=0.0)
-            if self.ros_world.is_playing():
-                if self.ros_world.current_time_step_index == 0:
-                    self.ros_world.reset()
+            if self.simulation_context.is_playing():
+                if self.simulation_context.current_time_step_index == 0:
+                    self.simulation_context.reset()
         # Cleanup
-        self.timeline.stop()
+        self.simulation_context.stop()
         simulation_app.close()
 
 
 class RobotLoader(Node):
     
-    def __init__(self, isaac_world, topic_name="/nanosaur/robot_description"):
-        super().__init__("robot_loader")
+    def __init__(self, isaac_world):
+        super().__init__("robot_loader", namespace="nanosaur")
         # Load isaac_world
         self.isaac_world = isaac_world
         # setup the ROS2 subscriber here
-        self.ros_sub = self.create_subscription(String, topic_name, self.callback_description, 1)
+        self.ros_sub = self.create_subscription(String, "robot_description", self.callback_description, 1)
         self.ros_sub  # prevent unused variable warning
         # Node started
         self.get_logger().info("Robot loader start")
 
     def load_robot(self):
         # Setting up import configuration:
-        status, import_config = omni.kit.commands.execute(
+        status, import_config = commands.execute(
             "URDFCreateImportConfig")
         import_config.merge_fixed_joints = False
         import_config.convex_decomp = False
@@ -128,43 +122,12 @@ class RobotLoader(Node):
 
         # Import URDF, stage_path contains the path the path to the usd prim in the stage.
         # extension_path = get_extension_path_from_name("omni.isaac.urdf")
-        status, stage_path = omni.kit.commands.execute(
+        status, stage_path = commands.execute(
             "URDFParseAndImportFile",
             urdf_path=PATH_LOCAL_URDF_FOLDER,
             # urdf_path=extension_path + "/data/urdf/robots/carter/urdf/carter.urdf",
             import_config=import_config,
         )
-        # Wait a step
-        self.isaac_world.wait_step_reload()
-
-            
-        # Creating a action graph with ROS component nodes
-        try:
-            og.Controller.edit(
-                {"graph_path": "/ActionGraph", "evaluator_name": "execution"},
-                {
-                    og.Controller.Keys.CREATE_NODES: [
-                        ("OnImpulseEvent", "omni.graph.action.OnImpulseEvent"),
-                        ("ReadSimTime", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
-                        ("PublishJointState", "omni.isaac.ros2_bridge.ROS2PublishJointState"),
-                        ("SubscribeJointState", "omni.isaac.ros2_bridge.ROS2SubscribeJointState"),
-                        ("PublishTF", "omni.isaac.ros2_bridge.ROS2PublishTransformTree"),
-                        ("PublishClock", "omni.isaac.ros2_bridge.ROS2PublishClock"),
-                    ],
-                    og.Controller.Keys.CONNECT: [
-                        ("OnImpulseEvent.outputs:execOut", "PublishJointState.inputs:execIn"),
-                        ("OnImpulseEvent.outputs:execOut", "SubscribeJointState.inputs:execIn"),
-                        ("OnImpulseEvent.outputs:execOut", "PublishTF.inputs:execIn"),
-                        ("OnImpulseEvent.outputs:execOut", "PublishClock.inputs:execIn"),
-                        ("ReadSimTime.outputs:simulationTime", "PublishJointState.inputs:timeStamp"),
-                        ("ReadSimTime.outputs:simulationTime", "PublishClock.inputs:timeStamp"),
-                        ("ReadSimTime.outputs:simulationTime", "PublishTF.inputs:timeStamp"),
-                    ],
-                },
-            )
-        except Exception as e:
-            print(e)
-            
         # Wait a step
         self.isaac_world.wait_step_reload()
 
