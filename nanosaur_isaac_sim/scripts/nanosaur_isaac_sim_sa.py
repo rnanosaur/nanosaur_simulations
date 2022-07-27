@@ -64,6 +64,7 @@ PATH_LOCAL_URDF_FOLDER="/tmp/robot.urdf"
 class IsaacWorld():
     
     def __init__(self, stage_path=""):
+        self.commands=[]
         # Setting up scene
         if stage_path:
             self.simulation_context = SimulationContext(stage_units_in_meters=1.0)
@@ -78,6 +79,9 @@ class IsaacWorld():
         simulation_app.update()
         simulation_app.update()
     
+    def add_tick(self, function):
+        self.commands += [function]
+    
     def wait_step_reload(self):
         self.simulation_context.step(render=True)
         print("Loading stage...")
@@ -91,6 +95,9 @@ class IsaacWorld():
     def run_simulation(self, node):
         while simulation_app.is_running():
             self.simulation_context.step(render=True)
+            # Tick the Publish/Subscribe JointState, Publish TF and Publish Clock nodes each frame
+            for command in self.commands:
+                command()
             rclpy.spin_once(node, timeout_sec=0.0)
             if self.simulation_context.is_playing():
                 if self.simulation_context.current_time_step_index == 0:
@@ -128,7 +135,6 @@ class RobotLoader(Node):
         status, stage_path = commands.execute(
             "URDFParseAndImportFile",
             urdf_path=PATH_LOCAL_URDF_FOLDER,
-            # urdf_path=extension_path + "/data/urdf/robots/carter/urdf/carter.urdf",
             import_config=import_config,
         )
         # Wait a step
