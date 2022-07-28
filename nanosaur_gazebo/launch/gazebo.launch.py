@@ -93,7 +93,7 @@ def launch_gazebo_setup(context: LaunchContext, support_namespace, support_world
     package_worlds = get_package_share_directory('nanosaur_worlds')
     # render namespace, dumping the support_package.
     namespace = context.perform_substitution(support_namespace)
-    world_name = context.perform_substitution(support_world)
+    world_name = context.perform_substitution(support_world) + '.world'
     print(f"Loading world: {world_name}")
     # Load configuration from params
     conf = load_robot_position(os.path.join(package_worlds, 'params', 'spawn_robot.yml'), world_name)
@@ -121,7 +121,7 @@ def generate_launch_description():
     gazebo_ros_path = get_package_share_directory('gazebo_ros')
     pkg_control = get_package_share_directory('nanosaur_control')
     
-    default_world_name = 'lab.world' # Empty world: empty.world
+    default_world_name = 'lab' # Empty world: empty
     
     launch_file_dir = os.path.join(package_gazebo, 'launch')
 

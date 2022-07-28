@@ -90,7 +90,7 @@ def launch_ignition_setup(context: LaunchContext, support_namespace, support_wor
     package_worlds = get_package_share_directory('nanosaur_worlds')
     # render namespace, dumping the support_package.
     namespace = context.perform_substitution(support_namespace)
-    world_name = context.perform_substitution(support_world)
+    world_name = context.perform_substitution(support_world) + '.sdf'
     print(f"Loading world: {world_name}")
     gui_config = os.path.join(package_ignition, "gui", "gui.config")
     basic_world = os.path.join(package_worlds, "worlds", world_name)
@@ -123,7 +123,7 @@ def launch_ignition_setup(context: LaunchContext, support_namespace, support_wor
 def generate_launch_description():
     package_ignition = get_package_share_directory('nanosaur_ignition')
 
-    default_world_name = 'lab.sdf' # Empty world: empty.sdf
+    default_world_name = 'lab' # Empty world: empty
 
     use_sim_time = LaunchConfiguration('use_sim_time', default='true')
     namespace = LaunchConfiguration('namespace', default="nanosaur")
