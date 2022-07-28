@@ -75,7 +75,6 @@ def generate_launch_description():
         description='Cover type to use. Options: pi, fisheye, realsense, zed.')
 
     # full  path to urdf and world file
-    # world = os.path.join(nanosaur_simulations, "worlds", world_file_name)
     xacro_path = os.path.join(package_isaac_sim, "urdf", "nanosaur.isaac.xacro")
 
     # Launch Robot State Publisher

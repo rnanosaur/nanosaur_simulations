@@ -21,6 +21,7 @@
     <xacro:nanosaur cover_type="$(arg cover_type)"
                     use_nominal_extrinsics="true"
                     diff_drive_emulation="true"
-                    path_meshes="$(find nanosaur_description)/meshes" />
+                    path_meshes="$(find nanosaur_description)/meshes"
+                    mimic_enable="false" />
 
 </robot>
