@@ -98,7 +98,7 @@ def launch_ignition_setup(context: LaunchContext, support_namespace, support_wor
     # Load configuration from params
     conf = load_robot_position(os.path.join(package_worlds, 'params', 'spawn_robot.yml'), world_name)
     ignition_spawn_entity = Node(
-        package='ros_ign_gazebo',
+        package='ros_gz_sim',
         executable='create',
         output='screen',
         namespace=namespace,
@@ -111,9 +111,9 @@ def launch_ignition_setup(context: LaunchContext, support_namespace, support_wor
     )
     
     ign_gazebo = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource([os.path.join(get_package_share_directory('ros_ign_gazebo'),
-                                                    'launch', 'ign_gazebo.launch.py')]),
-        launch_arguments=[('ign_args', [' -r -v 3 ' + basic_world + ' '
+        PythonLaunchDescriptionSource([os.path.join(get_package_share_directory('ros_gz_sim'),
+                                                    'launch', 'gz_sim.launch.py')]),
+        launch_arguments=[('gz_args', [' -r -v 3 ' + basic_world + ' '
                                         + ' --gui-config ' + gui_config
                                         ])])
     
@@ -177,8 +177,8 @@ def generate_launch_description():
     ld.add_action(world_name_cmd)
     ld.add_action(OpaqueFunction(function=launch_ignition_setup, args=[namespace, world_name]))
     ld.add_action(rsp_launcher)
-    ld.add_action(ros_ign_bridge)
-    ld.add_action(ros_control_launcher)
+    #ld.add_action(ros_ign_bridge)
+    #ld.add_action(ros_control_launcher)
 
     return ld
 # EOF

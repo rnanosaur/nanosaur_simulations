@@ -32,11 +32,6 @@ from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 from launch.substitutions import Command
 
-try:
-    from dotenv import load_dotenv, dotenv_values
-except:
-    print("Skip load dotenv library")
-
 
 def launch_setup(context: LaunchContext, support_package):
     """ Reference:
@@ -48,7 +43,8 @@ def launch_setup(context: LaunchContext, support_package):
 
     use_sim_time = LaunchConfiguration('use_sim_time', default='true')
     xacro_path = LaunchConfiguration('xacro_path')
-    cover_type = LaunchConfiguration('cover_type')
+    head_type = LaunchConfiguration('head_type')
+    flap_type = LaunchConfiguration('flap_type')
     # Add option to publish pointcloud
     publish_pointcloud="False"
     publish_odom_tf="False"
@@ -64,7 +60,8 @@ def launch_setup(context: LaunchContext, support_package):
                          [
                              'xacro ', xacro_path, ' ',
                              'robot_name:=', namespace, ' ',
-                             'cover_type:=', cover_type, ' ',
+                             'head_type:=', head_type, ' ',
+                             'flap_type:=', flap_type, ' ',
                              'publish_pointcloud:=', publish_pointcloud, ' ',
                              'publish_odom_tf:=', publish_odom_tf, ' ',
                          ])
@@ -76,16 +73,6 @@ def launch_setup(context: LaunchContext, support_package):
 
 def generate_launch_description():
     package_ignition = get_package_share_directory('nanosaur_ignition')
-
-    # Force load /opt/nanosaur/.env file
-    # https://pypi.org/project/python-dotenv/
-    try:
-        load_dotenv('/opt/nanosaur/.env', override=True)
-    except:
-        print("Skip load .env variables")
-
-    cover_type_conf = os.getenv("NANOSAUR_COVER_TYPE", 'fisheye')
-    print(f"Load cover_type from ENV: {cover_type_conf}")
 
     namespace = LaunchConfiguration('namespace', default="nanosaur")
 
@@ -99,10 +86,15 @@ def generate_launch_description():
         default_value='nanosaur',
         description='nanosaur namespace name. If you are working with multiple robot you can change this namespace.')
 
-    declare_cover_type_cmd = DeclareLaunchArgument(
-        name='cover_type',
-        default_value=cover_type_conf,
-        description='Cover type to use. Options: pi, fisheye, realsense, zed.')
+    declare_head_type_cmd = DeclareLaunchArgument(
+        name='head_type',
+        default_value='realsense',
+        description='Head type to use. Options: empty, Realsense, zed.')
+
+    declare_flap_type_cmd = DeclareLaunchArgument(
+        name='flap_type',
+        default_value='empty',
+        description='Flap type to use. Options: empty, LD06.')
 
     # full  path to urdf and world file
     # world = os.path.join(nanosaur_simulations, "worlds", world_file_name)
@@ -116,7 +108,8 @@ def generate_launch_description():
     ld = LaunchDescription()
     ld.add_action(use_sim_time_cmd)
     ld.add_action(nanosaur_cmd)
-    ld.add_action(declare_cover_type_cmd)
+    ld.add_action(declare_head_type_cmd)
+    ld.add_action(declare_flap_type_cmd)
     ld.add_action(declare_model_path_cmd)
     ld.add_action(OpaqueFunction(function=launch_setup, args=[namespace]))
 

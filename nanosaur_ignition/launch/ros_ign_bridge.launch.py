@@ -36,27 +36,13 @@ from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.conditions import LaunchConfigurationEquals
 
-try:
-    from dotenv import load_dotenv, dotenv_values
-except:
-    print("Skip load dotenv library")
-
 
 def generate_launch_description():
     pkg_control = get_package_share_directory('nanosaur_control')
 
-    # Force load /opt/nanosaur/.env file
-    # https://pypi.org/project/python-dotenv/
-    try:
-        load_dotenv('/opt/nanosaur/.env', override=True)
-    except:
-        print("Skip load .env variables")
-
-    cover_type_conf = os.getenv("NANOSAUR_COVER_TYPE", 'fisheye')
-    print(f"Load cover_type from ENV: {cover_type_conf}")
-
     use_sim_time = LaunchConfiguration('use_sim_time', default='true')
-    cover_type = LaunchConfiguration('cover_type')
+    head_type = LaunchConfiguration('head_type')
+    flap_type = LaunchConfiguration('flap_type')
     namespace = LaunchConfiguration('namespace', default="nanosaur")
 
     use_sim_time_cmd = DeclareLaunchArgument(
@@ -69,10 +55,15 @@ def generate_launch_description():
         default_value='nanosaur',
         description='nanosaur namespace name. If you are working with multiple robot you can change this namespace.')
 
-    declare_cover_type_cmd = DeclareLaunchArgument(
-        name='cover_type',
-        default_value=cover_type_conf,
-        description='Cover type to use. Options: pi, fisheye, realsense, zed.')
+    declare_head_type_cmd = DeclareLaunchArgument(
+        name='head_type',
+        default_value='realsense',
+        description='Head type to use. Options: empty, Realsense, zed.')
+
+    declare_flap_type_cmd = DeclareLaunchArgument(
+        name='flap_type',
+        default_value='empty',
+        description='Flap type to use. Options: empty, LD06.')
 
     scan_bridge = Node(
         package='ros_ign_bridge',
@@ -178,7 +169,8 @@ def generate_launch_description():
 
     ld = LaunchDescription()
     ld.add_action(use_sim_time_cmd)
-    ld.add_action(declare_cover_type_cmd)
+    ld.add_action(declare_head_type_cmd)
+    ld.add_action(declare_flap_type_cmd)
     ld.add_action(nanosaur_cmd)
     # ld.add_action(imu_bridge)
     # ld.add_action(scan_bridge)

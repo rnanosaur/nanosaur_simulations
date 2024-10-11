@@ -12,8 +12,9 @@
 
     <xacro:arg name="robot_name" default="nanosaur" />
     <!-- camera definitions -->
-    <xacro:arg name="cover_type" default="fisheye" /> <!--options pi, fisheye, realsense, zedmini -->
-    <xacro:property name="cover_type_name" value="$(arg cover_type)" />
+    <xacro:arg name="head_type" default="empty" /> <!--options: empty, realsense, zedmini -->
+    <xacro:arg name="flap_type" default="empty" /> <!--options: empty, LD06 -->
+    <xacro:property name="cover_type_name" value="$(arg head_type)" />
     <!-- control definitions -->
     <xacro:property name="control_type_name" value="ros2_control" /> <!--options ros2_control, diff_drive -->
 
@@ -27,7 +28,16 @@
          "diff_drive_emulation" parameter enable simulation mode.
          Add extra wheel and center sprocket for differential drive simulation -->
     <!--https://github.com/ros-simulation/gazebo_ros_pkgs/pull/1284 -->
-    <xacro:nanosaur cover_type="$(arg cover_type)"
+    <link name="base_link" />
+
+    <joint name="nanosaur_base_joint" type="fixed">
+        <origin xyz="0 0 0.05" rpy="0 0 0" />
+        <parent link="base_link"/>
+        <child link="nanosaur_base"/>
+    </joint>
+
+    <xacro:nanosaur head_type="$(arg head_type)"
+                    flap_type="$(arg flap_type)"
                     use_nominal_extrinsics="true"
                     diff_drive_emulation="true"/>
 
@@ -45,18 +55,8 @@
     </xacro:if>
 
     <!-- Nanosaur sensors -->
-    <xacro:if value="${cover_type_name == 'pi'}">
-        <xacro:normal_camera parent_name="camera_board" sensor_name="camera" robot_name="$(arg robot_name)">
-            <origin xyz="0 0 0" rpy="0 -${M_PI/2} 0" />
-        </xacro:normal_camera>
-    </xacro:if>
-    <xacro:if value="${cover_type_name == 'fisheye'}">
-    </xacro:if>
     <xacro:if value="${cover_type_name == 'realsense'}">
         <xacro:realsense_camera parent_name="camera_board" sensor_name="camera" robot_name="$(arg robot_name)" publish_pointcloud="$(arg publish_pointcloud)" />
-    </xacro:if>
-    <xacro:if value="${cover_type_name == 'zed'}">
-
     </xacro:if>
 
 </robot>
