@@ -1,4 +1,4 @@
-# Copyright (C) 2022, Raffaello Bonghi <raffaello@rnext.it>
+# Copyright (C) 2024, Raffaello Bonghi <raffaello@rnext.it>
 # All rights reserved
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -41,6 +41,8 @@ def generate_launch_description():
     pkg_control = get_package_share_directory('nanosaur_control')
 
     use_sim_time = LaunchConfiguration('use_sim_time', default='true')
+    # TODO world_name = LaunchConfiguration('world_name', default='empty')
+    world_name = "lab"
     head_type = LaunchConfiguration('head_type')
     flap_type = LaunchConfiguration('flap_type')
     namespace = LaunchConfiguration('namespace', default="nanosaur")
@@ -49,6 +51,11 @@ def generate_launch_description():
         'use_sim_time',
         default_value='true',
         description='Use simulation (Gazebo) clock if true')
+
+    world_name_cmd = DeclareLaunchArgument(
+        name='world_name',
+        default_value='empty',
+        description='Name of the world you are loading')
 
     nanosaur_cmd = DeclareLaunchArgument(
         name='namespace',
@@ -66,7 +73,7 @@ def generate_launch_description():
         description='Flap type to use. Options: empty, LD06.')
 
     scan_bridge = Node(
-        package='ros_ign_bridge',
+        package='ros_gz_bridge',
         executable='parameter_bridge',
         arguments=[
             '/scan@sensor_msgs/msg/LaserScan@ignition.msgs.LaserScan',
@@ -77,7 +84,7 @@ def generate_launch_description():
 
     # cmd_vel bridge
     imu_bridge = Node(
-        package='ros_ign_bridge',
+        package='ros_gz_bridge',
         executable='parameter_bridge',
         arguments=[
             '/imu@sensor_msgs/Imu@ignition.msgs.IMU'
@@ -88,59 +95,42 @@ def generate_launch_description():
 
     # cmd_vel bridge
     cmd_vel_bridge = Node(
-        package='ros_ign_bridge',
+        package='ros_gz_bridge',
         executable='parameter_bridge',
         name='cmd_vel_bridge',
         output='screen',
         namespace=namespace,
         parameters=[{'use_sim_time': use_sim_time}],
-        arguments=['/cmd_vel@geometry_msgs/msg/Twist@ignition.msgs.Twist',
-                   '/world/empty/model/nanosaur/joint_state@sensor_msgs/msg/JointState[ignition.msgs.Model',
-                   ],
+        arguments=['/model/nanosaur/cmd_vel@geometry_msgs/msg/Twist@ignition.msgs.Twist',
+                    f'/world/{world_name}/model/nanosaur/joint_state@sensor_msgs/msg/JointState[ignition.msgs.Model',
+                    ],
         remappings=[
-            ('/cmd_vel', '/nanosaur/cmd_vel'),
-            ('/world/empty/model/nanosaur/joint_state', 'joint_states'),
+            ('/model/nanosaur/cmd_vel', 'cmd_vel'),
+            (f'/world/{world_name}/model/nanosaur/joint_state', 'joint_states'),
         ]
         )
 
     ###################### Camera ######################
-
-    # camera bridge
-    camera_bridge = Node(
-        package='ros_ign_bridge',
-        executable='parameter_bridge',
-        name='camera_bridge',
-        output='screen',
-        namespace='camera',
-        parameters=[{'use_sim_time': use_sim_time}],
-        arguments=['/camera@sensor_msgs/msg/Image@ignition.msgs.Image',
-                   '/camera_info@sensor_msgs/msg/CameraInfo@ignition.msgs.CameraInfo'],
-        remappings=[
-            ('/camera', 'image_raw'),
-            ('/camera_info', 'camera_info')
-        ],
-        condition=LaunchConfigurationEquals('cover_type', 'pi')
-    )
     
     # realsense infra1 bridge
     realsense_bridge = Node(
-        package='ros_ign_bridge',
+        package='ros_gz_bridge',
         executable='parameter_bridge',
         name='realsense_bridge',
         output='screen',
         namespace='camera',
         parameters=[{'use_sim_time': use_sim_time}],
         arguments=['/infra1/camera_raw@sensor_msgs/msg/Image@ignition.msgs.Image',
-                   '/infra1/camera_info@sensor_msgs/msg/CameraInfo@ignition.msgs.CameraInfo',
-                   '/infra2/camera_raw@sensor_msgs/msg/Image@ignition.msgs.Image',
-                   '/infra2/camera_info@sensor_msgs/msg/CameraInfo@ignition.msgs.CameraInfo'],
+                    '/infra1/camera_info@sensor_msgs/msg/CameraInfo@ignition.msgs.CameraInfo',
+                    '/infra2/camera_raw@sensor_msgs/msg/Image@ignition.msgs.Image',
+                    '/infra2/camera_info@sensor_msgs/msg/CameraInfo@ignition.msgs.CameraInfo'],
         remappings=[
             ('/infra1/camera_raw', 'infra1/image_raw'),
             ('/infra1/camera_info', 'infra1/camera_info'),
             ('/infra2/camera_raw', 'infra2/image_raw'),
             ('/infra2/camera_info', 'infra2/camera_info')
         ],
-        condition=LaunchConfigurationEquals('cover_type', 'realsense')
+        condition=LaunchConfigurationEquals('head_type', 'realsense')
     )
 
     # include another launch file in nanosaur namespace
@@ -149,7 +139,6 @@ def generate_launch_description():
             # push-ros-namespace to set namespace of included nodes
             PushRosNamespace(namespace),
             # nanosaur cameras
-            camera_bridge,
             realsense_bridge
         ]
     )

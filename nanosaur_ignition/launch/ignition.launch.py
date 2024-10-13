@@ -1,4 +1,4 @@
-# Copyright (C) 2022, Raffaello Bonghi <raffaello@rnext.it>
+# Copyright (C) 2024, Raffaello Bonghi <raffaello@rnext.it>
 # All rights reserved
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -159,10 +159,10 @@ def generate_launch_description():
         launch_arguments={'use_sim_time': use_sim_time}.items(),
     )
 
-    ros_ign_bridge = IncludeLaunchDescription(
+    ros_gz_bridge = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            [launch_file_dir, '/ros_ign_bridge.launch.py']),
-        launch_arguments={'use_sim_time': use_sim_time}.items(),
+            [launch_file_dir, '/ros_gz_bridge.launch.py']),
+        launch_arguments={'use_sim_time': use_sim_time, 'world_name': world_name}.items(),
     )
 
     ros_control_launcher = IncludeLaunchDescription(
@@ -177,7 +177,7 @@ def generate_launch_description():
     ld.add_action(world_name_cmd)
     ld.add_action(OpaqueFunction(function=launch_ignition_setup, args=[namespace, world_name]))
     ld.add_action(rsp_launcher)
-    #ld.add_action(ros_ign_bridge)
+    ld.add_action(ros_gz_bridge)
     #ld.add_action(ros_control_launcher)
 
     return ld

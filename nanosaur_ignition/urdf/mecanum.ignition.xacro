@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<robot name="nanosaur_mecanum"
+    xmlns:xacro="http://ros.org/wiki/xacro">
+
+    <!-- reference  
+            https://gazebosim.org/api/gazebo/6/classignition_1_1gazebo_1_1systems_1_1MecanumDrive.html
+            https://github.com/robomaster-oss/rmoss_gz_resources/blob/humble/resource/models/rmua19_standard_robot/model.sdf.xmacro
+
+        -->
+    <xacro:macro name="mecanum_drive" params="parent wheelbase wheel_radius wheel_separation">
+        <gazebo>
+            <plugin name="ignition::gazebo::systems::MecanumDrive" filename="libignition-gazebo-mecanum-drive-system.so">
+                <chassis_link>${parent}</chassis_link>
+                <front_left_joint>omniwheel_left_front_joint</front_left_joint>
+                <front_right_joint>omniwheel_right_front_joint</front_right_joint>
+                <back_left_joint>omniwheel_left_rear_joint</back_left_joint>
+                <back_right_joint>omniwheel_right_rear_joint</back_right_joint>
+                <!-- Longitudinal distance between front and back wheels, in meters.
+                This element is optional, although it is recommended to be included with an appropriate value. The default value is 1.0m. -->
+                <wheelbase>${wheelbase}</wheelbase>
+                <!-- Lateral distance between left and right wheels, in meters.
+                This element is optional, although it is recommended to be included with an appropriate value. The default value is 1.0m. -->
+                <wheel_separation>${wheel_separation}</wheel_separation>
+                <!-- Wheel radius in meters.
+                This element is optional, although it is recommended to be included with an appropriate value. The default value is 0.2m. -->
+                <wheel_radius>${wheel_radius}</wheel_radius>
+                <!-- Custom topic that this system will subscribe to in order to
+                receive command velocity messages. This element if optional, and the
+                default value is /model/{name_of_model}/cmd_vel -->
+                <!-- <topic>cmd_vel</topic> -->
+            </plugin>
+
+            <!-- Joint states plugin -->
+            <plugin name="ignition::gazebo::systems::JointStatePublisher" filename="libignition-gazebo-joint-state-publisher-system.so">
+            </plugin>
+        </gazebo>
+    </xacro:macro>
+
+</robot>

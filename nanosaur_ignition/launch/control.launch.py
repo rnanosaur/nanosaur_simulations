@@ -38,13 +38,13 @@ def generate_launch_description():
         namespace=namespace)
 
     load_joint_state_controller = ExecuteProcess(
-        cmd=['ros2', 'control', 'load_controller', '-c', '/nanosaur/controller_manager', '--set-state', 'start',
+        cmd=['ros2', 'control', 'load_controller', '-c', '/nanosaur/controller_manager', '--set-state', 'active',
              'joint_state_broadcaster'],
         output='screen'
     )
 
     load_joint_trajectory_controller = ExecuteProcess(
-        cmd=['ros2', 'control', 'load_controller', '-c', '/nanosaur/controller_manager', '--set-state', 'start',
+        cmd=['ros2', 'control', 'load_controller', '-c', '/nanosaur/controller_manager', '--set-state', 'active',
              'diff_drive_base_controller'],
         output='screen'
     )
@@ -59,7 +59,7 @@ def generate_launch_description():
 
     return LaunchDescription([
         nanosaur_cmd,
-        republish_cmd_node,
+        #republish_cmd_node,
         load_joint_state_controller,
-        diff_drive_base_controller_callback
+        #diff_drive_base_controller_callback
     ])

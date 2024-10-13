@@ -4,10 +4,8 @@
     <!-- nanosaur parts -->
     <xacro:include filename="$(find nanosaur_description)/urdf/robot.urdf.xacro" />
     <!-- differential drive -->
-    <xacro:include filename="$(find nanosaur_ignition)/urdf/diff_drive.ignition.xacro" />
-    <xacro:include filename="$(find nanosaur_ignition)/urdf/ros2_control.ignition.xacro" />
+    <xacro:include filename="$(find nanosaur_ignition)/urdf/mecanum.ignition.xacro" />
     <!-- Sensors -->
-    <xacro:include filename="$(find nanosaur_ignition)/urdf/sensors/camera.ignition.xacro" />
     <xacro:include filename="$(find nanosaur_ignition)/urdf/sensors/realsense.ignition.xacro" />
 
     <xacro:arg name="robot_name" default="nanosaur" />
@@ -15,8 +13,6 @@
     <xacro:arg name="head_type" default="empty" /> <!--options: empty, realsense, zedmini -->
     <xacro:arg name="flap_type" default="empty" /> <!--options: empty, LD06 -->
     <xacro:property name="cover_type_name" value="$(arg head_type)" />
-    <!-- control definitions -->
-    <xacro:property name="control_type_name" value="ros2_control" /> <!--options ros2_control, diff_drive -->
 
     <xacro:arg name="publish_pointcloud"  default="false"/>
     <xacro:arg name="publish_odom_tf"  default="false"/>
@@ -25,8 +21,8 @@
     <xacro:arg name="resolution"    default="VGA"/>
 
     <!-- nanosaur robot
-         "diff_drive_emulation" parameter enable simulation mode.
-         Add extra wheel and center sprocket for differential drive simulation -->
+        "diff_drive_emulation" parameter enable simulation mode.
+        Add extra wheel and center sprocket for differential drive simulation -->
     <!--https://github.com/ros-simulation/gazebo_ros_pkgs/pull/1284 -->
     <link name="base_link" />
 
@@ -41,18 +37,8 @@
                     use_nominal_extrinsics="true"
                     diff_drive_emulation="true"/>
 
-    <xacro:if value="${control_type_name == 'ros2_control'}">
-        <xacro:nanosaur_ros2_control robot_name="$(arg robot_name)" />
-    </xacro:if>
-    <!-- nanosaur differential drive controller -->
-    <xacro:if value="${control_type_name == 'diff_drive'}">
-        <xacro:track_drive parent="base_link"
-                        robot_name="$(arg robot_name)"
-                        update_rate="100.0"
-                        wheel_radius="0.0150"
-                        wheel_separation="0.4"
-                        publish_odom_tf="$(arg publish_odom_tf)" />
-    </xacro:if>
+    <!-- nanosaur mecanum wheel drive controller -->
+    <xacro:mecanum_drive parent="base_link" wheelbase="0.1" wheel_radius="0.0185" wheel_separation="0.082" />
 
     <!-- Nanosaur sensors -->
     <xacro:if value="${cover_type_name == 'realsense'}">
