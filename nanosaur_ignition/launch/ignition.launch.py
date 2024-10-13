@@ -165,11 +165,6 @@ def generate_launch_description():
         launch_arguments={'use_sim_time': use_sim_time, 'world_name': world_name}.items(),
     )
 
-    ros_control_launcher = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource([launch_file_dir, '/control.launch.py']),
-        launch_arguments={'use_sim_time': use_sim_time}.items(),
-    )
-
     ld = LaunchDescription()
     ld.add_action(ign_resource_path)
     ld.add_action(use_sim_time_cmd)
@@ -178,7 +173,6 @@ def generate_launch_description():
     ld.add_action(OpaqueFunction(function=launch_ignition_setup, args=[namespace, world_name]))
     ld.add_action(rsp_launcher)
     ld.add_action(ros_gz_bridge)
-    #ld.add_action(ros_control_launcher)
 
     return ld
 # EOF

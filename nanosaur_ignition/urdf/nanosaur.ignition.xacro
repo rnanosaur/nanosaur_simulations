@@ -3,8 +3,7 @@
 
     <!-- nanosaur parts -->
     <xacro:include filename="$(find nanosaur_description)/urdf/robot.urdf.xacro" />
-    <!-- differential drive -->
-    <xacro:include filename="$(find nanosaur_ignition)/urdf/mecanum.ignition.xacro" />
+    <xacro:include filename="$(find nanosaur_ignition)/urdf/mecanum_drive.ignition.xacro" />
     <!-- Sensors -->
     <xacro:include filename="$(find nanosaur_ignition)/urdf/sensors/realsense.ignition.xacro" />
 
@@ -15,34 +14,30 @@
     <xacro:property name="cover_type_name" value="$(arg head_type)" />
 
     <xacro:arg name="publish_pointcloud"  default="false"/>
-    <xacro:arg name="publish_odom_tf"  default="false"/>
 
     <xacro:arg name="depth_camera"  default="left"/>
     <xacro:arg name="resolution"    default="VGA"/>
 
-    <!-- nanosaur robot
-        "diff_drive_emulation" parameter enable simulation mode.
-        Add extra wheel and center sprocket for differential drive simulation -->
     <!--https://github.com/ros-simulation/gazebo_ros_pkgs/pull/1284 -->
-    <link name="base_link" />
-
-    <joint name="nanosaur_base_joint" type="fixed">
-        <origin xyz="0 0 0.05" rpy="0 0 0" />
-        <parent link="base_link"/>
-        <child link="nanosaur_base"/>
-    </joint>
-
-    <xacro:nanosaur head_type="$(arg head_type)"
-                    flap_type="$(arg flap_type)"
-                    use_nominal_extrinsics="true"
-                    diff_drive_emulation="true"/>
+    <xacro:nanosaur
+            head_type="$(arg head_type)"
+            flap_type="$(arg flap_type)"
+            use_nominal_extrinsics="true" />
 
     <!-- nanosaur mecanum wheel drive controller -->
-    <xacro:mecanum_drive parent="base_link" wheelbase="0.1" wheel_radius="0.0185" wheel_separation="0.082" />
+    <xacro:mecanum_drive
+            parent="base_link"
+            wheelbase="${nanosaur_wheelbase}"
+            wheel_radius="${mecanum_radius}"
+            wheel_separation="${nanosaur_wheel_separation}" />
 
     <!-- Nanosaur sensors -->
     <xacro:if value="${cover_type_name == 'realsense'}">
-        <xacro:realsense_camera parent_name="camera_board" sensor_name="camera" robot_name="$(arg robot_name)" publish_pointcloud="$(arg publish_pointcloud)" />
+        <xacro:realsense_camera
+                parent_name="camera_board"
+                sensor_name="camera"
+                robot_name="$(arg robot_name)"
+                publish_pointcloud="$(arg publish_pointcloud)" />
     </xacro:if>
 
 </robot>

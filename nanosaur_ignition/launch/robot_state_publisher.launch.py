@@ -47,7 +47,6 @@ def launch_setup(context: LaunchContext, support_package):
     flap_type = LaunchConfiguration('flap_type')
     # Add option to publish pointcloud
     publish_pointcloud = "False"
-    publish_odom_tf = "False"
 
     # Launch Robot State Publisher
     robot_state_publisher_node = Node(
@@ -63,7 +62,6 @@ def launch_setup(context: LaunchContext, support_package):
                             'head_type:=', head_type, ' ',
                             'flap_type:=', flap_type, ' ',
                             'publish_pointcloud:=', publish_pointcloud, ' ',
-                            'publish_odom_tf:=', publish_odom_tf, ' ',
                         ])
                     }]
     )

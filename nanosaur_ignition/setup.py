@@ -44,7 +44,6 @@ setup(
         ('share/' + package_name, ['package.xml']),
         ('share/' + package_name, ['requirements.txt']),
         (path.join('share', package_name, 'launch'), glob('launch/*.py')),
-        (path.join('share', package_name, 'config'), glob('config/*')),
         (path.join('share', package_name, 'urdf'), glob('urdf/*.xacro')),
         (path.join('share', package_name, 'urdf/sensors'), glob('urdf/sensors/*.xacro')),
         (path.join('share', package_name, 'gui'), glob('gui/*')),
