@@ -26,8 +26,8 @@
 import os
 
 from ament_index_python.packages import get_package_share_directory
-from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
+from launch import LaunchDescription, LaunchContext
+from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 from launch.actions import GroupAction
@@ -37,41 +37,14 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.conditions import LaunchConfigurationEquals
 
 
-def generate_launch_description():
-    pkg_control = get_package_share_directory('nanosaur_control')
+def launch_gz_bridge_setup(context: LaunchContext, support_use_sim_time, support_namespace, support_world_name):
 
-    use_sim_time = LaunchConfiguration('use_sim_time', default='true')
-    # TODO world_name = LaunchConfiguration('world_name', default='empty')
-    world_name = "lab"
-    head_type = LaunchConfiguration('head_type')
-    flap_type = LaunchConfiguration('flap_type')
-    namespace = LaunchConfiguration('namespace', default="nanosaur")
-
-    use_sim_time_cmd = DeclareLaunchArgument(
-        'use_sim_time',
-        default_value='true',
-        description='Use simulation (Gazebo) clock if true')
-
-    world_name_cmd = DeclareLaunchArgument(
-        name='world_name',
-        default_value='empty',
-        description='Name of the world you are loading')
-
-    nanosaur_cmd = DeclareLaunchArgument(
-        name='namespace',
-        default_value='nanosaur',
-        description='nanosaur namespace name. If you are working with multiple robot you can change this namespace.')
-
-    declare_head_type_cmd = DeclareLaunchArgument(
-        name='head_type',
-        default_value='realsense',
-        description='Head type to use. Options: empty, Realsense, zed.')
-
-    declare_flap_type_cmd = DeclareLaunchArgument(
-        name='flap_type',
-        default_value='empty',
-        description='Flap type to use. Options: empty, LD06.')
-
+    use_sim_time = context.perform_substitution(support_use_sim_time)
+    # Cast in boolean
+    use_sim_time = use_sim_time.lower() in ("true", "1", "yes", "on")
+    namespace = context.perform_substitution(support_namespace)
+    world_name = context.perform_substitution(support_world_name)
+    
     scan_bridge = Node(
         package='ros_gz_bridge',
         executable='parameter_bridge',
@@ -101,12 +74,12 @@ def generate_launch_description():
         output='screen',
         namespace=namespace,
         parameters=[{'use_sim_time': use_sim_time}],
-        arguments=['/model/nanosaur/cmd_vel@geometry_msgs/msg/Twist@ignition.msgs.Twist',
-                    f'/world/{world_name}/model/nanosaur/joint_state@sensor_msgs/msg/JointState[ignition.msgs.Model',
+        arguments=[f'/model/{namespace}/cmd_vel@geometry_msgs/msg/Twist@ignition.msgs.Twist',
+                    f'/world/{world_name}/model/{namespace}/joint_state@sensor_msgs/msg/JointState[ignition.msgs.Model',
                     ],
         remappings=[
-            ('/model/nanosaur/cmd_vel', 'cmd_vel'),
-            (f'/world/{world_name}/model/nanosaur/joint_state', 'joint_states'),
+            (f'/model/{namespace}/cmd_vel', 'cmd_vel'),
+            (f'/world/{world_name}/model/{namespace}/joint_state', 'joint_states'),
         ]
         )
 
@@ -142,6 +115,43 @@ def generate_launch_description():
             realsense_bridge
         ]
     )
+    return [cmd_vel_bridge, camera_group]
+
+
+def generate_launch_description():
+    pkg_control = get_package_share_directory('nanosaur_control')
+
+    use_sim_time = LaunchConfiguration('use_sim_time')
+    world_name = LaunchConfiguration('world_name')
+    ##############################àworld_name = "lab"
+    head_type = LaunchConfiguration('head_type')
+    flap_type = LaunchConfiguration('flap_type')
+    namespace = LaunchConfiguration('namespace')
+
+    use_sim_time_cmd = DeclareLaunchArgument(
+        'use_sim_time',
+        default_value='true',
+        description='Use simulation (Gazebo) clock if true')
+
+    world_name_cmd = DeclareLaunchArgument(
+        name='world_name',
+        default_value='empty',
+        description='Name of the world you are loading')
+
+    nanosaur_cmd = DeclareLaunchArgument(
+        name='namespace',
+        default_value='nanosaur',
+        description='nanosaur namespace name. If you are working with multiple robot you can change this namespace.')
+
+    declare_head_type_cmd = DeclareLaunchArgument(
+        name='head_type',
+        default_value='realsense',
+        description='Head type to use. Options: empty, Realsense, zed.')
+
+    declare_flap_type_cmd = DeclareLaunchArgument(
+        name='flap_type',
+        default_value='empty',
+        description='Flap type to use. Options: empty, LD06.')
 
     ###################### Twist controls ######################
 
@@ -158,14 +168,12 @@ def generate_launch_description():
 
     ld = LaunchDescription()
     ld.add_action(use_sim_time_cmd)
+    ld.add_action(world_name_cmd)
     ld.add_action(declare_head_type_cmd)
     ld.add_action(declare_flap_type_cmd)
     ld.add_action(nanosaur_cmd)
-    # ld.add_action(imu_bridge)
-    # ld.add_action(scan_bridge)
+    ld.add_action(OpaqueFunction(function=launch_gz_bridge_setup, args=[use_sim_time, namespace, world_name]))
     ld.add_action(twist_control_launch)
-    ld.add_action(cmd_vel_bridge)
-    ld.add_action(camera_group)
 
     return ld
 # EOF
