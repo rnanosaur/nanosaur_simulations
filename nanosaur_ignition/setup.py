@@ -23,7 +23,7 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, 
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from setuptools import setup
+from setuptools import find_packages, setup
 # Launch command
 from os import path
 from glob import glob
@@ -37,7 +37,7 @@ with open(path.join(here, 'requirements.txt'), encoding='utf-8') as f:
 setup(
     name=package_name,
     version='2.0.0',
-    packages=[package_name],
+    packages=find_packages(exclude=['test']),
     data_files=[
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),

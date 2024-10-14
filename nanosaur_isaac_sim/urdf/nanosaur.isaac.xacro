@@ -6,22 +6,13 @@
 
     <xacro:arg name="robot_name" default="nanosaur" />
     <!-- camera definitions -->
-    <xacro:arg name="cover_type" default="fisheye" /> <!--options: pi, fisheye, realsense, zedmini -->
+    <xacro:arg name="head_type" default="empty" /> <!--options: empty, realsense, zedmini -->
+    <xacro:arg name="flap_type" default="empty" /> <!--options: empty, LD06 -->
     <xacro:property name="cover_type_name" value="$(arg cover_type)" />
-    
-    <xacro:arg name="publish_pointcloud"  default="false"/>
-    <xacro:arg name="publish_odom_tf"  default="false"/>
 
-    <xacro:arg name="depth_camera"  default="left"/>
-    <xacro:arg name="resolution"    default="VGA"/>
-
-    <!-- nanosaur robot
-         "diff_drive_emulation" parameter enable simulation mode.
-         Add extra wheel and center sprocket for differential drive simulation -->
-    <xacro:nanosaur cover_type="$(arg cover_type)"
-                    use_nominal_extrinsics="true"
-                    diff_drive_emulation="true"
-                    path_meshes="$(find nanosaur_description)/meshes"
-                    mimic_enable="false" />
+    <xacro:nanosaur
+            head_type="$(arg head_type)"
+            flap_type="$(arg flap_type)"
+            use_nominal_extrinsics="true" />
 
 </robot>

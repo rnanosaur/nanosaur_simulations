@@ -26,38 +26,55 @@
 import os
 
 from ament_index_python.packages import get_package_share_directory
-from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
+from launch import LaunchDescription, LaunchContext
+from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 from launch.substitutions import Command
+from launch.event_handlers.on_process_exit import OnProcessExit
+from launch.actions import RegisterEventHandler
 
-try:
-    from dotenv import load_dotenv, dotenv_values
-except:
-    print("Skip load dotenv library")
+
+def launch_setup(context: LaunchContext, support_package):
+    """ Reference:
+        https://answers.ros.org/question/396345/ros2-launch-file-how-to-convert-launchargument-to-string/ 
+        https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/blob/main/ur_moveit_config/launch/ur_moveit.launch.py
+    """
+    # render namespace, dumping the support_package.
+    namespace = context.perform_substitution(support_package)
+
+    use_sim_time = LaunchConfiguration('use_sim_time')
+    xacro_path = LaunchConfiguration('xacro_path')
+    head_type = LaunchConfiguration('head_type')
+    flap_type = LaunchConfiguration('flap_type')
+    # Add option to publish pointcloud
+    publish_pointcloud = "False"
+
+    # Launch Robot State Publisher
+    robot_state_publisher_node = Node(
+        package='robot_state_publisher',
+        executable='robot_state_publisher',
+        namespace=namespace,
+        parameters=[{'use_sim_time': use_sim_time,
+                    # 'frame_prefix': f"{namespace}/", # Reimplemented https://github.com/ros/robot_state_publisher/pull/169
+                    'robot_description': Command(
+                        [
+                            'xacro ', xacro_path, ' ',
+                            'robot_name:=', namespace, ' ',
+                            'head_type:=', head_type, ' ',
+                            'flap_type:=', flap_type, ' ',
+                            'publish_pointcloud:=', publish_pointcloud, ' ',
+                        ])
+                    }]
+    )
+
+    return [robot_state_publisher_node]
 
 
 def generate_launch_description():
     package_isaac_sim = get_package_share_directory('nanosaur_isaac_sim')
 
-    # Force load /opt/nanosaur/.env file
-    # https://pypi.org/project/python-dotenv/
-    try:
-        load_dotenv('/opt/nanosaur/.env', override=True)
-    except:
-        print("Skip load .env variables")
-
-    cover_type_conf = os.getenv("NANOSAUR_COVER_TYPE", 'fisheye')
-    print(f"Load cover_type from ENV: {cover_type_conf}")
-
-    use_sim_time = LaunchConfiguration('use_sim_time', default='true')
-    cover_type = LaunchConfiguration('cover_type')
     namespace = LaunchConfiguration('namespace', default="nanosaur")
-    
-    # Add option to publish pointcloud
-    publish_pointcloud="False"
-    publish_odom_tf="False"
 
     use_sim_time_cmd = DeclareLaunchArgument(
         name='use_sim_time',
@@ -69,36 +86,44 @@ def generate_launch_description():
         default_value='nanosaur',
         description='nanosaur namespace name. If you are working with multiple robot you can change this namespace.')
 
-    declare_cover_type_cmd = DeclareLaunchArgument(
-        name='cover_type',
-        default_value=cover_type_conf,
-        description='Cover type to use. Options: pi, fisheye, realsense, zed.')
+    declare_head_type_cmd = DeclareLaunchArgument(
+        name='head_type',
+        default_value='realsense',
+        description='Head type to use. Options: empty, Realsense, zed.')
+
+    declare_flap_type_cmd = DeclareLaunchArgument(
+        name='flap_type',
+        default_value='empty',
+        description='Flap type to use. Options: empty, LD06.')
 
     # full  path to urdf and world file
-    xacro_path = os.path.join(package_isaac_sim, "urdf", "nanosaur.isaac.xacro")
+    default_xacro_path = os.path.join(package_isaac_sim, "urdf", "nanosaur.isaac.xacro")
 
-    # Launch Robot State Publisher
-    robot_state_publisher_node = Node(
-        package='robot_state_publisher',
-        executable='robot_state_publisher',
+    declare_model_path_cmd = DeclareLaunchArgument(
+        name='xacro_path',
+        default_value=default_xacro_path,
+        description='Absolute path to robot urdf file')
+
+    # This service node wait the service start up from the Isaac Sim and exit 
+    isaac_sim_manager = Node(
+        package='nanosaur_isaac_sim',
         namespace=namespace,
-        parameters=[{'use_sim_time': use_sim_time,
-                     'robot_description': Command(
-                         [
-                             'xacro ', xacro_path, ' ',
-                             'robot_name:=', namespace, ' ',
-                             'cover_type:=', cover_type, ' ',
-                             'publish_pointcloud:=', publish_pointcloud, ' ',
-                             'publish_odom_tf:=', publish_odom_tf, ' ',
-                         ])
-                     }]
+        executable='isaac_sim_manager',
     )
     
+    # Dynamic robot_state_publisher
+    robot_state_publisher_node = OpaqueFunction(function=launch_setup, args=[namespace])
+
     ld = LaunchDescription()
     ld.add_action(use_sim_time_cmd)
     ld.add_action(nanosaur_cmd)
-    ld.add_action(declare_cover_type_cmd)
-    ld.add_action(robot_state_publisher_node)
-
+    ld.add_action(declare_head_type_cmd)
+    ld.add_action(declare_flap_type_cmd)
+    ld.add_action(declare_model_path_cmd)
+    # Wait Isaac Sim server start before to load robot
+    # https://docs.ros.org/en/humble/Tutorials/Intermediate/Launch/Using-Event-Handlers.html
+    # https://robotics.stackexchange.com/questions/103118/ros2-launch-nodes-in-a-specific-order
+    ld.add_action(isaac_sim_manager)
+    ld.add_action(RegisterEventHandler(event_handler=OnProcessExit(target_action=isaac_sim_manager, on_exit=robot_state_publisher_node)))
     return ld
 # EOF

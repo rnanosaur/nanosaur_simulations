@@ -41,7 +41,7 @@ def launch_setup(context: LaunchContext, support_package):
     # render namespace, dumping the support_package.
     namespace = context.perform_substitution(support_package)
 
-    use_sim_time = LaunchConfiguration('use_sim_time', default='true')
+    use_sim_time = LaunchConfiguration('use_sim_time')
     xacro_path = LaunchConfiguration('xacro_path')
     head_type = LaunchConfiguration('head_type')
     flap_type = LaunchConfiguration('flap_type')
@@ -71,8 +71,7 @@ def launch_setup(context: LaunchContext, support_package):
 
 def generate_launch_description():
     package_ignition = get_package_share_directory('nanosaur_ignition')
-
-    namespace = LaunchConfiguration('namespace', default="nanosaur")
+    namespace = LaunchConfiguration('namespace')
 
     use_sim_time_cmd = DeclareLaunchArgument(
         name='use_sim_time',

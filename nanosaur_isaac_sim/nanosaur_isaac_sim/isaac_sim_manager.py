@@ -23,41 +23,42 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, 
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+# https://docs.ros.org/en/noetic/api/std_srvs/html/srv/Empty.html
+from std_srvs.srv import Empty
+
 import rclpy
 from rclpy.node import Node
-from rclpy.qos import QoSProfile
-from geometry_msgs.msg import Twist
 
-class Republisher(Node):
-    
+class IsaacSimMananger(Node):
+
     def __init__(self):
-        super().__init__('nanosaur_cmd')
-        # Node started
-        self.get_logger().info("Node republisher started!")
-        
-        qos_profile = QoSProfile(depth=10)
-        self.repub = self.create_publisher(Twist, 'diff_drive_base_controller/cmd_vel_unstamped', qos_profile)
-        self.subscription = self.create_subscription(
-            Twist,
-            'cmd_vel',
-            self.drive_callback,
-            10)
-        self.subscription  # prevent unused variable warning
+        super().__init__('isaac_sim_manager')
+        self.cli = self.create_client(Empty, '/isaac_sim_status')
+        # Get interval parameter, default 5.0
+        self.declare_parameter('timeout_sec', 5.0)
+        timeout_sec = self.get_parameter('timeout_sec')._value
+        self.get_logger().info(f"Isaac Sim manager started, check every {timeout_sec}s")
+        # Wait until Isaac Sim service starter
+        while not self.cli.wait_for_service(timeout_sec=timeout_sec):
+            self.get_logger().info("Isaac Sim not yet started, waiting again...")
+        self.req = Empty.Request()
     
-    def drive_callback(self, msg):
-        self.repub.publish(msg)
-        
+    def send_request(self):
+        return self.cli.call_async(self.req)
+
 def main(args=None):
     rclpy.init(args=args)
-    # Start Nanosaur
-    republisher = Republisher()
+    # Start Isaac Sim manager
+    manager = IsaacSimMananger()
+    future = manager.send_request()
     try:
-        rclpy.spin(republisher)
+        rclpy.spin_until_future_complete(manager, future)
     except (KeyboardInterrupt, SystemExit):
         pass
     # Destroy the node explicitly
-    republisher.destroy_node()
+    manager.destroy_node()
     rclpy.shutdown()
+
 
 if __name__ == '__main__':
     main()

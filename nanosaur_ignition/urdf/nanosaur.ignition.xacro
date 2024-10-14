@@ -18,7 +18,6 @@
     <xacro:arg name="depth_camera"  default="left"/>
     <xacro:arg name="resolution"    default="VGA"/>
 
-    <!--https://github.com/ros-simulation/gazebo_ros_pkgs/pull/1284 -->
     <xacro:nanosaur
             head_type="$(arg head_type)"
             flap_type="$(arg flap_type)"

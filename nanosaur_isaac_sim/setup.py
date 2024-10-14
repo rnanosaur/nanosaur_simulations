@@ -1,5 +1,4 @@
-#!/bin/bash
-# Copyright (C) 2022, Raffaello Bonghi <raffaello@rnext.it>
+# Copyright (C) 2024, Raffaello Bonghi <raffaello@rnext.it>
 # All rights reserved
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -24,11 +23,41 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+from setuptools import find_packages, setup
+# Launch command
+from os import path
+from glob import glob
 
-ISAAC_SIM_VERSION="isaac_sim-2022.1.0"
-ISAAC_SIM_NANOSAUR_LAUNCHER="nanosaur_isaac_sim/scripts/nanosaur_isaac_sim_sa.py"
+package_name = 'nanosaur_isaac_sim'
 
-echo "Isaac SIM nanosaur launcher"
+here = path.abspath(path.dirname(__file__))
+with open(path.join(here, 'requirements.txt'), encoding='utf-8') as f:
+    requirements = f.read().splitlines()
 
-# Run Isaac SIM stand alone
-bash "$HOME/.local/share/ov/pkg/$ISAAC_SIM_VERSION/python.sh" $(pwd)/$ISAAC_SIM_NANOSAUR_LAUNCHER
+setup(
+    name=package_name,
+    version='2.0.0',
+    packages=find_packages(exclude=['test']),
+    data_files=[
+        ('share/ament_index/resource_index/packages',
+            ['resource/' + package_name]),
+        ('share/' + package_name, ['package.xml']),
+        ('share/' + package_name, ['requirements.txt']),
+        (path.join('share', package_name, 'launch'), glob('launch/*.py')),
+        (path.join('share', package_name, 'scripts'), glob('scripts/*.sh')),
+        (path.join('share', package_name, 'scripts'), glob('scripts/*.py')),
+        (path.join('share', package_name, 'urdf'), glob('urdf/*.xacro')),
+    ],
+    install_requires=requirements,
+    zip_safe=True,
+    maintainer='Raffaello Bonghi',
+    maintainer_email='raffaello@rnext.it',
+    description='Run nanosaur on NVIDIA Isaac Sim',
+    license='MIT',
+    tests_require=['pytest'],
+    entry_points={
+        'console_scripts': [
+            'isaac_sim_manager = nanosaur_isaac_sim.isaac_sim_manager:main',
+        ],
+    },
+)
