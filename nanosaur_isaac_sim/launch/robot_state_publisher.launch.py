@@ -125,5 +125,7 @@ def generate_launch_description():
     # https://robotics.stackexchange.com/questions/103118/ros2-launch-nodes-in-a-specific-order
     ld.add_action(isaac_sim_manager)
     ld.add_action(RegisterEventHandler(event_handler=OnProcessExit(target_action=isaac_sim_manager, on_exit=robot_state_publisher_node)))
+    # OLD robot_state_publisher_node launcher
+    # ld.add_action(robot_state_publisher_node)
     return ld
 # EOF

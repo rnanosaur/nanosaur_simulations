@@ -76,6 +76,7 @@ from omni.kit import commands
 from omni import usd
 
 from nanosaur_action_graphs import build_clock_graph
+from camera_graphs import build_realsense_camera_graph
 
 # enable ROS2 bridge extension
 enable_extension("omni.isaac.ros2_bridge")
@@ -154,7 +155,7 @@ class RobotLoader(Node):
         self.namespace = namespace
         self.isaac_world = isaac_world
         # setup the ROS2 subscriber here
-        self.ros_sub = self.create_subscription(String, "robot_description", self.callback_description, 1)
+        self.ros_sub = self.create_subscription(String, "robot_description", self.callback_description, 10)
         self.ros_sub  # prevent unused variable warning
         self.srv = self.create_service(Empty, '/isaac_sim_status', self.status_isaac_sim_loader)
         # Node started
@@ -183,6 +184,10 @@ class RobotLoader(Node):
         )
         # Wait a step
         self.isaac_world.wait_step_reload()
+        # Build camera graph
+        build_realsense_camera_graph(robot_name)
+        # Update simulation
+        simulation_app.update()
 
     def callback_description(self, msg):
         # callback function to set the cube position to a new one upon receiving a (empty) ROS2 message
