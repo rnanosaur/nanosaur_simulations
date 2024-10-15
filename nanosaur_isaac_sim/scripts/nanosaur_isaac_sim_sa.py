@@ -75,7 +75,7 @@ from omni.isaac.core.utils import nucleus
 from omni.kit import commands
 from omni import usd
 
-from nanosaur_action_graphs import build_clock_graph
+from nanosaur_action_graphs import build_clock_graph, build_mecanum_controller_graph
 from camera_graphs import build_realsense_camera_graph
 
 # enable ROS2 bridge extension
@@ -185,7 +185,9 @@ class RobotLoader(Node):
         # Wait a step
         self.isaac_world.wait_step_reload()
         # Build camera graph
-        build_realsense_camera_graph(robot_name)
+        # build_realsense_camera_graph(robot_name)
+        # Build mecanum controller
+        build_mecanum_controller_graph(robot_name)
         # Update simulation
         simulation_app.update()
 
