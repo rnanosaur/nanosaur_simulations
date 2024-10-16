@@ -74,8 +74,11 @@ from omni.isaac.core import World, SimulationContext
 from omni.isaac.core.utils import nucleus
 from omni.kit import commands
 from omni import usd
+import omni
+from pxr import Sdf
+from omni.kit.viewport.window import get_viewport_window_instances
 
-from nanosaur_action_graphs import build_clock_graph, build_mecanum_controller_graph
+from nanosaur_action_graphs import build_clock_graph, publish_joint_state_graph, build_mecanum_controller_graph
 from camera_graphs import build_realsense_camera_graph
 
 # enable ROS2 bridge extension
@@ -185,11 +188,24 @@ class RobotLoader(Node):
         # Wait a step
         self.isaac_world.wait_step_reload()
         # Build camera graph
-        # build_realsense_camera_graph(robot_name)
+        build_realsense_camera_graph(robot_name)
+        # Build Joint State publisher
+        #links = ["front_left_mecanum_link", "front_right_mecanum_link", "rear_left_mecanum_link", "rear_right_mecanum_link"]
+        #publish_joint_state_graph(robot_name, links)
         # Build mecanum controller
-        build_mecanum_controller_graph(robot_name)
+        #build_mecanum_controller_graph(robot_name)
+        
+        # Change stiffness and damping
+        nanosaur_stage_path="/nanosaur/nanosaur_base"
+        for joint in ["front_left_mecanum", "front_right_mecanum", "rear_left_mecanum", "rear_right_mecanum"]:
+            omni.kit.commands.execute('ChangeProperty', prop_path=Sdf.Path(f"{nanosaur_stage_path}/{joint}_joint.drive:angular:physics:damping"), value=17453.0, prev=0.0)
+            omni.kit.commands.execute('ChangeProperty', prop_path=Sdf.Path(f"{nanosaur_stage_path}/{joint}_joint.drive:angular:physics:stiffness"), value=0.0, prev=0.0)
         # Update simulation
         simulation_app.update()
+
+        for window in get_viewport_window_instances(None):
+            if window.title in ["Viewport1", "Viewport2", "Viewport3"]:
+                window.visible = False
 
     def callback_description(self, msg):
         # callback function to set the cube position to a new one upon receiving a (empty) ROS2 message

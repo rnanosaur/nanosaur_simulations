@@ -28,8 +28,7 @@ import omni.graph.core as og
 from omni.isaac.core.utils import stage
 from pxr import Gf, UsdGeom
 from omni.isaac.core.utils.prims import set_targets
-
-
+from omni.kit.viewport.window import get_viewport_window_instances
 
 
 def create_camera(robot_name, number_camera, camera_frame, camera_stage_path, camera_name, stereo_offset=[0.0, 0.0]):
@@ -39,7 +38,7 @@ def create_camera(robot_name, number_camera, camera_frame, camera_stage_path, ca
     
     # Creating an on-demand push graph with cameraHelper nodes to generate ROS image publishers
     keys = og.Controller.Keys
-    (ros_camera_graph, _, _, _) = og.Controller.edit(
+    og.Controller.edit(
         {
             "graph_path": ros_camera_graph_path,
             "evaluator_name": "push",
@@ -89,6 +88,7 @@ def create_camera(robot_name, number_camera, camera_frame, camera_stage_path, ca
         attribute="inputs:cameraPrim",
         target_prim_paths=[camera_stage_path],
     )
+    return viewport_name
 
 
 def create_camera_rgb_depth(robot_name, number_camera, camera_frame, camera_depth_frame, camera_stage_path, camera_name, stereo_offset=[0.0, 0.0]):
@@ -98,7 +98,7 @@ def create_camera_rgb_depth(robot_name, number_camera, camera_frame, camera_dept
     
     # Creating an on-demand push graph with cameraHelper nodes to generate ROS image publishers
     keys = og.Controller.Keys
-    (ros_camera_graph, _, _, _) = og.Controller.edit(
+    og.Controller.edit(
         {
             "graph_path": ros_camera_graph_path,
             "evaluator_name": "push",
@@ -154,6 +154,8 @@ def create_camera_rgb_depth(robot_name, number_camera, camera_frame, camera_dept
         attribute="inputs:cameraPrim",
         target_prim_paths=[camera_stage_path],
     )
+    return viewport_name
+
 
 def build_realsense_camera_graph(robot_name,
                                 baseline=0.05,
@@ -180,7 +182,7 @@ def build_realsense_camera_graph(robot_name,
     camera_rgb_prim.GetFocalLengthAttr().Set(2.4)
     camera_rgb_prim.GetFocusDistanceAttr().Set(4)
     # Build left infra/rgb camera
-    create_camera(robot_name, 1, f"{camera_name}_{camera_rgb_frame}", camera_rgb_stage_path, "rgb")
+    viewport1 = create_camera(robot_name, 1, f"{camera_name}_{camera_rgb_frame}", camera_rgb_stage_path, "rgb")
     # Creating a Camera prim
     camera_left_stage_path = f"/{robot_name}/{camera_name}_{camera_left_optical_frame}/camera_left"
     camera_left_prim = UsdGeom.Camera(omni.usd.get_context().get_stage().DefinePrim(camera_left_stage_path, "Camera"))
@@ -196,7 +198,7 @@ def build_realsense_camera_graph(robot_name,
     camera_left_prim.GetFocalLengthAttr().Set(2.4)
     camera_left_prim.GetFocusDistanceAttr().Set(4)
     # Build left infra/rgb camera
-    create_camera(robot_name, 2, f"{camera_name}_{camera_left_frame}", camera_left_stage_path, "left")
+    viewport2 = create_camera(robot_name, 2, f"{camera_name}_{camera_left_frame}", camera_left_stage_path, "left")
     # Creating a Camera prim
     camera_right_stage_path = f"/{robot_name}/{camera_name}_{camera_right_optical_frame}/camera_right"
     camera_right_prim = UsdGeom.Camera(omni.usd.get_context().get_stage().DefinePrim(camera_right_stage_path, "Camera"))
@@ -212,6 +214,5 @@ def build_realsense_camera_graph(robot_name,
     camera_right_prim.GetFocalLengthAttr().Set(2.4)
     camera_right_prim.GetFocusDistanceAttr().Set(4)
     # Build right infra/rgb camera
-    create_camera(robot_name, 3, f"{camera_name}_{camera_right_frame}", camera_right_stage_path, "right")
-
+    viewport3 = create_camera(robot_name, 3, f"{camera_name}_{camera_right_frame}", camera_right_stage_path, "right")
 # EOF
